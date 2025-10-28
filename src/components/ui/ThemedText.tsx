@@ -5,7 +5,7 @@ import { useThemeColor } from '../../hooks/useThemeColor' // ← ruta relativa c
 export type ThemedTextProps = TextProps & {
   lightColor?: string
   darkColor?: string
-  type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link'
+  type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link'|'title2'
 }
 
 export default function ThemedText({
@@ -26,6 +26,7 @@ export default function ThemedText({
         type === 'defaultSemiBold' && styles.defaultSemiBold,
         type === 'subtitle' && styles.subtitle,
         type === 'link' && styles.link,
+        type === 'title2' && styles.title2,
         style,
       ]}
       {...rest}
@@ -48,6 +49,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     lineHeight: 32,
   },
+
+   title2: {
+    fontSize: 25,
+    fontWeight: 'bold',
+    lineHeight: 32,
+  },
+
   subtitle: {
     fontSize: 20,
     fontWeight: 'bold',

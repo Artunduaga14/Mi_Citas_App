@@ -1,73 +1,61 @@
 import React from "react";
 import {
-  Modal,
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
   Platform,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
-export type Appointment = {
+export interface RelatedPersonList {
   id: number;
-  state: string;
-  note: string | null;
-  appointmentDate: string;
-  timeBlock?: string | null;
-  scheduleHourId: number;
-  nameDoctor: string;
-  consultingRoomName: string;
-  roomNumber: number;
-  isDeleted: boolean;
-  registrationDate: string;
-};
+  personId: number;
+  fullName: string;
+  relation: string;
+  documentTypeName: string | null;
+  document: string;
+  active?: boolean;
+  color?: string; // opcional
+}
 
 type Props = {
-  item: Appointment;
-  onPressDetails?: (item: Appointment) => void;
+  item: RelatedPersonList;
+  onPressDetails?: (item: RelatedPersonList) => void;
   subtitleText?: string;
 };
 
-export default function AppointmentCard({ item, onPressDetails, subtitleText }: Props) {
-  const dateObj = new Date(item.appointmentDate);
-
-  const timeStr = item.timeBlock
-    ? toHumanTime(item.timeBlock)
-    : new Intl.DateTimeFormat("es-ES", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      }).format(dateObj);
-
-  const dateStr = new Intl.DateTimeFormat("es-ES", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(dateObj);
-
+export default function RelatedPersonCard({ item, onPressDetails, subtitleText }: Props) {
+  // Subtítulo: prioridad -> prop, relation, estado activo/inactivo
   const subtitle =
     subtitleText ??
-    item.note ??
-    (item.state === "Asistida"
-      ? "Gracias por asistir a tu cita"
-      : item.state === "Agendada"
-      ? "Tu cita está agendada"
-      : item.state);
+    (item.relation
+      ? capitalizeFirst(item.relation)
+      : item.active === false
+      ? "Inactivo"
+      : "Relacionado");
+
+  // “Píldoras” informativas (imitando hora/fecha del otro card)
+  const pillLeftText = item.documentTypeName
+    ? `${item.documentTypeName}`
+    : "Documento";
+  const pillRightText = item.document || "N/D";
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, item.color ? { borderBottomColor: item.color } : null]}>
       {/* Cabecera */}
       <View style={styles.headerRow}>
         <View style={styles.leftIconBubble}>
           <MaterialCommunityIcons name="account-outline" size={28} color="#4B7FD6" />
         </View>
+
+        {/* Título: nombre completo */}
         <Text style={styles.title} numberOfLines={1}>
-          {capitalizeFirst(item.consultingRoomName || "Consulta externa")}
+          {item.fullName || "Persona relacionada"}
         </Text>
+
         <MaterialCommunityIcons
-          name="calendar-month"
+          name="account-check-outline"
           size={28}
           color="#3D7BFF"
           style={styles.headerRightIcon}
@@ -84,19 +72,20 @@ export default function AppointmentCard({ item, onPressDetails, subtitleText }: 
         </View>
       )}
 
-      {/* Fila con hora, fecha y botón */}
+      {/* Fila con “píldoras” y botón */}
       <View style={styles.infoRow}>
         <View style={styles.infoPill}>
-          <Ionicons name="time-outline" size={18} color="#000" />
-          <Text style={styles.infoText}>{timeStr}</Text>
+          <Ionicons name="id-card-outline" size={18} color="#000" />
+          <Text style={styles.infoText}>{pillLeftText}</Text>
         </View>
 
         <View style={styles.infoPill}>
-          <Ionicons name="calendar-outline" size={18} color="#000" />
-          <Text style={styles.infoText}>{dateStr}</Text>
+          <Ionicons name="document-text-outline" size={18} color="#000" />
+          <Text style={styles.infoText}>{pillRightText}</Text>
         </View>
 
         <View style={{ flex: 1 }} />
+
         <TouchableOpacity
           activeOpacity={0.85}
           style={styles.detailBtn}
@@ -109,19 +98,8 @@ export default function AppointmentCard({ item, onPressDetails, subtitleText }: 
   );
 }
 
-function toHumanTime(hhmmss: string) {
-  const [h, m] = hhmmss.split(":").map((t) => parseInt(t, 10));
-  const d = new Date();
-  d.setHours(h, m || 0, 0, 0);
-  return new Intl.DateTimeFormat("es-ES", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  }).format(d);
-}
-
 function capitalizeFirst(s: string) {
-  return s.charAt(0).toUpperCase() + s.slice(1);
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 }
 
 const styles = StyleSheet.create({
@@ -188,39 +166,39 @@ const styles = StyleSheet.create({
   },
 
   infoRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginTop: 8,
-  justifyContent: "space-between", // 👈 clave: reparte espacio
-},
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 8,
+    justifyContent: "space-between",
+  },
 
   infoPill: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginRight: 10,
-  backgroundColor: "#F2F4F7",
-  borderRadius: 10,
-  paddingVertical: 6,
-  paddingHorizontal: 5,
-  flexShrink: 1, // 👈 evita que empujen el botón
-},
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 10,
+    backgroundColor: "#F2F4F7",
+    borderRadius: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 5,
+    flexShrink: 1,
+    gap: 6,
+  },
   infoText: {
     fontSize: 15,
     fontWeight: "700",
     color: "#000",
   },
 
- detailBtn: {
-  backgroundColor: "#6B8CFF",
-  paddingVertical: 8,
-  paddingHorizontal: 14,
-  borderRadius: 16,
-  flexShrink: 0, // 👈 nunca se achica
-},
+  detailBtn: {
+    backgroundColor: "#6B8CFF",
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 16,
+    flexShrink: 0,
+  },
   detailBtnText: {
     color: "#fff",
     fontSize: 14,
     fontWeight: "700",
   },
-  
 });

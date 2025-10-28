@@ -8,6 +8,7 @@ import { Colors } from '../constants/Colors'
 import { useColorScheme } from '../hooks/useColorScheme'
 import { Ionicons } from '@expo/vector-icons' // usa Ionicons o tu IconSymbol
 import TabTwoScreen from '../screens/Notifications/explore'
+import RelatedPersonsScreen from '../screens/RelatedPersons/relatedPerson'
 
 const Tab = createBottomTabNavigator()
 
@@ -26,13 +27,12 @@ export default function MainNavigator() {
         tabBarStyle: {
           position: 'absolute',
           height: 72,
-          paddingHorizontal: 24,
-          borderTopWidth: 0,
-          backgroundColor: 'transparent', // importante para que se vea el fondo redondeado
+          paddingHorizontal: 80,
+          elevation: 0,
         },
       }}
     >
-            <Tab.Screen
+            { <Tab.Screen
         name="Home"
         component={HomeScreen}
         options={{
@@ -46,27 +46,27 @@ export default function MainNavigator() {
                 backgroundColor: focused ? tint : 'transparent',
                 alignItems: 'center',
                 justifyContent: 'center',
-                transform: [{ translateY: focused ? -20 : 0 }], // “levanta” el activo
+               
                 shadowColor: '#000',
                 shadowOpacity: focused ? 0.16 : 0,
-                shadowRadius: 10,
+                shadowRadius: 70,
                 shadowOffset: { width: 0, height: 4 },
                 elevation: focused ? 6 : 0,
               }}
             >
               <Ionicons
                 name="home"
-                size={focused ? 24 : 22}
+                size={focused ? 24 : 30}
                 color={focused ? '#fff' : '#4b5563'}
               />
             </View>
           ),
         }}
-      />
+      /> }
 
 
       {/* Cuando tengas otras tabs, repite el mismo patrón: */}
-       <Tab.Screen
+       { <Tab.Screen
         name="Notifications"
         component={TabTwoScreen}
         options={{
@@ -79,7 +79,37 @@ export default function MainNavigator() {
               backgroundColor: focused ? tint : 'transparent',
               alignItems: 'center',
               justifyContent: 'center',
-              transform: [{ translateY: focused ? -20 : 0 }], // “levanta” el activo
+          
+              shadowColor: '#000',
+              shadowOpacity: focused ? 0.16 : 0,
+              shadowRadius: 70,
+              shadowOffset: { width: 0, height: 4 },
+              elevation: focused ? 6 : 0,
+            }}>
+              <Ionicons
+                name="notifications"
+                size={focused ? 24 : 30}
+                color={focused ? '#fff' : '#4b5563'}
+              />
+            </View>
+          ),
+        }}
+      />  }
+
+           <Tab.Screen
+        name="RelatedPersons"
+        component={RelatedPersonsScreen}
+        options={{
+          title: '',
+          tabBarIcon: ({ color, size, focused }) => (
+            <View style={{
+              width: focused ? 52 : 40,
+              height: focused ? 52 : 80,
+              borderRadius: 999,
+              backgroundColor: focused ? tint : 'transparent',
+              alignItems: 'center',
+              justifyContent: 'center',
+              // transform: [{ translateY: focused ? -20 : 0 }], // “levanta” el activo
               shadowColor: '#000',
               shadowOpacity: focused ? 0.16 : 0,
               shadowRadius: 10,
@@ -87,8 +117,8 @@ export default function MainNavigator() {
               elevation: focused ? 6 : 0,
             }}>
               <Ionicons
-                name="notifications"
-                size={focused ? 24 : 22}
+                name="people"
+                size={focused ? 24 : 30}
                 color={focused ? '#fff' : '#4b5563'}
               />
             </View>

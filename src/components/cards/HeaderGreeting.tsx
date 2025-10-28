@@ -2,6 +2,7 @@ import { StyleSheet, View } from "react-native";
 import  ThemedText  from "../ui/ThemedText";
 import  ThemedView  from "../ui/ThemedView";
 import { MaterialIcons, Entypo } from "@expo/vector-icons";
+import React from "react";
 
 type Props = {
   name: string; // Nombre del usuario
@@ -16,7 +17,7 @@ export default function HeaderGreeting({ name }: Props) {
       {/* Texto de saludo */}
       <View style={styles.textContainer}>
         <ThemedText>Hola,</ThemedText>
-        <ThemedText type="title">{name}</ThemedText>
+        <ThemedText type="subtitle">{name}</ThemedText>
       </View>
 
       {/* Icono de menú */}

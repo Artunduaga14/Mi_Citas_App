@@ -38,7 +38,7 @@ const ICONS: Record<string, any> = {
 
 // === DATOS DE RESPALDO ===
 const DATA = [
-  { id: "1", name: "", icon: "consulta" },
+  { id: "1", name: "Consulta General", icon: "consulta" },
   { id: "2", name: "Odontología", icon: "odontologia" },
   { id: "3", name: "Pediatría", icon: "pediatria" },
   { id: "4", name: "Citología", icon: "citologia" },
@@ -48,8 +48,6 @@ const DATA = [
   { id: "8", name: "Laboratorio Clínico", icon: "laboratorio" },
 ]
 
-// === COLORES DE FONDO PARA TARJETAS ===
-const BG_COLORS = ["#f0f4ff","#f7eefc","#eefdf2","#fff0f1","#eef8ff","#eef3ff","#fff6ee","#f1effc"]
 
 // === NORMALIZADOR DE TEXTO ===
 const normalize = (s: string) =>
@@ -102,7 +100,7 @@ export default function HomeScreen() {
       <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.content}>
         {/* 👇 Transparente para que se vea el fondo */}
         <ThemedView style={[styles.container, { backgroundColor: "transparent" }]}>
-          <HeaderGreeting name="Esteban " />
+          <HeaderGreeting name="Daniel Gómez " />
 
           <BannerCard
             image={require("../../../assets/images/Imagen1.png")}

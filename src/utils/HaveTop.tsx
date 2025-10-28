@@ -1,5 +1,6 @@
 import Svg, { Path } from "react-native-svg";
 import { Dimensions } from "react-native";
+import React from "react";
 
 const { width } = Dimensions.get("window");
 

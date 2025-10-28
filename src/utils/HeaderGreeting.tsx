@@ -1,7 +1,8 @@
 import { StyleSheet, View } from "react-native";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import  ThemedText  from "../components/ui/ThemedText";
+import  ThemedView  from "../components/ui/ThemedView";
 import { MaterialIcons, Entypo } from "@expo/vector-icons";
+import React from "react";
 
 type Props = {
   name: string; // Nombre del usuario
