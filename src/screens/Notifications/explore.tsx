@@ -7,6 +7,7 @@ import { HttpService } from "../../services/GenericServices";
 import AppointmentCard, { Appointment } from "../../components/cards/AppointmentCard";
 import AppointmentDetailModal from "../../components/cards/AppointmentDetailModel";
 import { RelatedPersonList } from "../../components/cards/RelatedPersonCard";
+import { authService } from "../../services/Auth/AuthService";
 
 // === CONFIGURACIÓN DE DIMENSIONES ===
 const { width } = Dimensions.get("window")
@@ -24,7 +25,9 @@ export default function TabTwoScreen() {
 
   const loadAppointments = async () => {
     try {
-      const res = await HttpService.get("Citation/list");
+       const userId = await authService.getUserId();
+      const res = await HttpService.get(`/Citation/list/${userId}`);
+
       const items: Appointment[] = Array.isArray(res) ? res : [];
 
       const grouped: Record<string, Appointment[]> = {};
