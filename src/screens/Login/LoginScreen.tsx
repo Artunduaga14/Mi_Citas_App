@@ -12,6 +12,7 @@ import {
   TouchableOpacity
 } from "react-native";
 import { useNavigation, ParamListBase, NavigationProp } from "@react-navigation/native";
+import { authService } from "../../services/Auth/AuthService";
 
 export default function LoginScreen() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -41,28 +42,38 @@ export default function LoginScreen() {
   const handleLogin = async (data: any) => {
     try {
       setLoading(true);
+
       const response = await HttpService.login("user", data);
 
-      if (response.status) {
-        Alert.alert("✅ Login correcto", "Bienvenido");
-        // Resetea el árbol y entra a Main (tus tabs). La tab por defecto será Home.
-        navigation.reset({ index: 0, routes: [{ name: "Main" }] });
-
-        // Si quieres ir a una screen específica dentro de Main (por ejemplo la tab 'Home'):
-        // navigation.reset({
-        //   index: 0,
-        //   routes: [{ name: "Main", params: { screen: "Home" } }],
-        // })
-      } else {
-        Alert.alert("❌ Error", "Credenciales incorrectas");
+      // 👇 si tu backend retorna el token dentro de response.data.accessToken
+      const token = response?.data?.accessToken;
+      if (!token) {
+        Alert.alert("❌ Error", "No se recibió token del servidor");
+        return;
       }
+
+      // 🧠 1️⃣ Guarda el token antes de navegar
+    await authService.setTokens(response.data.accessToken, response.data.refreshToken);
+
+      console.log("🔐 Token guardado en AsyncStorage correctamente");
+
+      // 🧠 2️⃣ Verifica si se decodifica bien (opcional, modo debug)
+      if (__DEV__) {
+        const userId = await authService.getUserId();
+        console.log("👤 Usuario autenticado con ID:", userId);
+      }
+
+      // 🧭 3️⃣ Navega solo después de guardar el token
+      Alert.alert("✅ Login correcto", "Bienvenido");
+      // navigation.reset({ index: 0, routes: [{ name: "Main" }] });
     } catch (error: any) {
-      console.error(error);
+      console.error("❌ Error en login:", error);
       Alert.alert("⚠️ Error", "No se pudo conectar con el servidor");
     } finally {
       setLoading(false);
     }
   };
+
 
   const handleForgot = async (data: any) => {
     try {

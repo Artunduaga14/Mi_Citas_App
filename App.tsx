@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar'
 import { useFonts } from 'expo-font'
 import AppNavigator from './src/navigation/AppNavigator'
 import { useColorScheme } from './src/hooks/useColorScheme' // tu hook
+import ProtectedNavigator from './src/navigation/ProtectedNavigator'
 
 export default function App() {
   const colorScheme = useColorScheme()
@@ -15,9 +16,10 @@ export default function App() {
   if (!loaded) return null
 
   return (
-    <NavigationContainer theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <StatusBar style="auto" />
-      <AppNavigator />
-    </NavigationContainer>
+   <NavigationContainer theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+  <StatusBar style="auto" />
+  <ProtectedNavigator />
+</NavigationContainer>
+
   )
 }
