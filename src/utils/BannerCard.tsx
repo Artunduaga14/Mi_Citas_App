@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, ImageBackground, View } from "react-native";
-import { ThemedText } from "@/components/ThemedText";
+import  ThemedText  from "../components/ui/ThemedText";
 
 type Props = {
   image: any; // require() o { uri }

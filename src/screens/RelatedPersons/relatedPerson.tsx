@@ -1,32 +1,49 @@
+// src/screens/RelatedPerson/relatedPerson.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ImageBackground,
   StyleSheet,
   View,
   FlatList,
-  TextInput,
   TouchableOpacity,
   Text,
   Platform,
   Dimensions,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+
 import ThemedText from "../../components/ui/ThemedText";
 import ThemedView from "../../components/ui/ThemedView";
 import HeaderGreeting from "../../components/cards/HeaderGreeting";
+
 import { HttpService } from "../../services/GenericServices";
-import { RelatedPersonList } from "../../components/cards/RelatedPersonCard"; // solo para el tipo
-// === CONFIGURACIÓN DE DIMENSIONES ===
-const { width } = Dimensions.get("window")
-const NUM_COLS = 3
-const H_PADDING = 16
-const GAP = 12
-const CARD_SIZE = Math.floor((width - H_PADDING * 2 - GAP * (NUM_COLS - 1)) / NUM_COLS)
+// ⚠️ Ideal: usa el tipo desde models/Gestion/RelatedPerson
+// import { RelatedPersonList } from "../../models/Gestion/RelatedPerson";
+import { RelatedPersonList } from "../../components/cards/RelatedPersonCard";
+
+import RelatedPersonModal from "../../components/Forms/relatedPerson";
+
+const { width } = Dimensions.get("window");
+const NUM_COLS = 2;
+const H_PADDING = 16;
+const GAP = 16;
+const CARD_SIZE = Math.floor((width - H_PADDING * 2 - GAP * (NUM_COLS - 1)) / NUM_COLS);
+
 type Tile = { kind: "person"; data: RelatedPersonList } | { kind: "add" };
 
 export default function RelatedPersonsScreen() {
   const [people, setPeople] = useState<RelatedPersonList[]>([]);
   const [query, setQuery] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  // NUEVO: item en edición (si hay, el modal va en modo "edit")
+  const [editItem, setEditItem] = useState<RelatedPersonList | null>(null);
+  const isEdit = !!editItem;
+
+  // TODO: id real del paciente
+  const personId = 2;
 
   useEffect(() => {
     loadRelatedPersons();
@@ -34,7 +51,7 @@ export default function RelatedPersonsScreen() {
 
   const loadRelatedPersons = async () => {
     try {
-      const res = await HttpService.get("RelatedPerson");
+      const res = await HttpService.get(`RelatedPerson/by-person/${personId}`);
       const items: RelatedPersonList[] = Array.isArray(res) ? res : [];
       setPeople(items);
     } catch (err) {
@@ -60,19 +77,58 @@ export default function RelatedPersonsScreen() {
     return t;
   }, [filtered]);
 
+  // Tap en tarjeta (si quieres que edite al tocar, puedes llamar onPressEdit aquí)
   const onPressPerson = (p: RelatedPersonList) => {
-    console.log("Detalle persona relacionada:", p.id);
-    // TODO: navegar a detalle o abrir modal
+    console.log("Tap card:", p.id);
   };
 
   const onPressAdd = () => {
-    console.log("Agregar persona");
-    // TODO: abrir modal/route de creación
+    setEditItem(null); // modo crear
+    setShowModal(true);
+  };
+
+  const onPressEdit = (p: RelatedPersonList) => {
+    setEditItem(p);    // modo editar
+    setShowModal(true);
+  };
+
+  const handleDelete = (item: RelatedPersonList) => {
+    Alert.alert(
+      "Eliminar",
+      `¿Eliminar a "${item.fullName}"? Esta acción no se puede deshacer.`,
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Eliminar",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setDeletingId(item.id as number);
+              await HttpService.delete(`RelatedPerson/${item.id}`);
+              setPeople((prev) => prev.filter((p) => p.id !== item.id));
+            } catch (e) {
+              console.error(e);
+              Alert.alert("Error", "No se pudo eliminar.");
+            } finally {
+              setDeletingId(null);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const renderItem = ({ item }: { item: Tile }) => {
     if (item.kind === "add") return <AddCard onPress={onPressAdd} />;
-    return <PersonTile item={item.data} onPress={() => onPressPerson(item.data)} />;
+    return (
+      <PersonTile
+        item={item.data}
+        onPress={() => onPressPerson(item.data)}
+        onEdit={() => onPressEdit(item.data)}     // 👈 botón de editar
+        onDelete={() => handleDelete(item.data)}  // 👈 botón de eliminar
+        deleting={deletingId === item.data.id}
+      />
+    );
   };
 
   return (
@@ -82,10 +138,8 @@ export default function RelatedPersonsScreen() {
       resizeMode="cover"
     >
       <ThemedView style={[styles.container, { backgroundColor: "transparent" }]}>
-        {/* Encabezado */}
         <HeaderGreeting name="Daniel Gómez" />
 
-        {/* Título + subtítulo */}
         <View style={styles.headerBlock}>
           <ThemedText type="title2" style={styles.title}>
             Personas Relacionadas
@@ -95,20 +149,6 @@ export default function RelatedPersonsScreen() {
           </ThemedText>
         </View>
 
-        {/* Buscador */}
-        {/* <View style={styles.searchBox}>
-          <Ionicons name="search" size={18} color="#8A8A8A" style={{ marginHorizontal: 10 }} />
-          <TextInput
-            placeholder="Buscar"
-            placeholderTextColor="#9AA0A6"
-            value={query}
-            onChangeText={setQuery}
-            style={styles.searchInput}
-            returnKeyType="search"
-          />
-        </View> */}
-
-        {/* Grid 2 columnas */}
         <FlatList
           data={tiles}
           numColumns={2}
@@ -119,16 +159,62 @@ export default function RelatedPersonsScreen() {
           showsVerticalScrollIndicator={false}
         />
       </ThemedView>
+
+      {/* MODAL crear/editar */}
+      <RelatedPersonModal
+        visible={showModal}
+        onClose={() => {
+          setShowModal(false);
+          setEditItem(null);
+        }}
+        onSaved={async () => {
+          await loadRelatedPersons();
+        }}
+        personId={personId}
+        mode={isEdit ? "edit" : "create"}
+        initial={editItem ?? undefined}
+      />
     </ImageBackground>
   );
 }
 
-/* ---------- Tile de persona (avatar + nombre + relación) ---------- */
-function PersonTile({ item, onPress }: { item: RelatedPersonList; onPress: () => void }) {
+/* ---------- Tarjeta con Editar y Eliminar ---------- */
+function PersonTile({
+  item,
+  onPress,
+  onEdit,
+  onDelete,
+  deleting,
+}: {
+  item: RelatedPersonList;
+  onPress: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  deleting?: boolean;
+}) {
   const initials = getInitials(item.fullName);
-  const bg = item.color || pickColor(item.fullName);
+  const bg = (item as any).color || pickColor(item.fullName);
+
   return (
     <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={styles.card}>
+      {/* Botón Editar (lápiz) */}
+      <TouchableOpacity
+        onPress={onEdit}
+        hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+        style={styles.editBtn}
+      >
+        <Ionicons name="create" size={18} color="#fff" />
+      </TouchableOpacity>
+
+      {/* Botón Eliminar (basura) */}
+      <TouchableOpacity
+        onPress={onDelete}
+        hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+        style={styles.deleteBtn}
+      >
+        <Ionicons name="trash" size={18} color="#fff" />
+      </TouchableOpacity>
+
       <View style={styles.avatarWrap}>
         <View style={[styles.avatarCircle, { backgroundColor: bg }]}>
           <Text style={styles.avatarText}>{initials}</Text>
@@ -142,11 +228,16 @@ function PersonTile({ item, onPress }: { item: RelatedPersonList; onPress: () =>
           {capitalize(item.relation || "Relacionado")}
         </Text>
       </View>
+
+      {deleting ? (
+        <View style={styles.deletingCover}>
+          <Text style={styles.deletingText}>Eliminando…</Text>
+        </View>
+      ) : null}
     </TouchableOpacity>
   );
 }
 
-/* ---------- Tile “Agregar persona” ---------- */
 function AddCard({ onPress }: { onPress: () => void }) {
   return (
     <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={[styles.card, styles.addCard]}>
@@ -158,64 +249,31 @@ function AddCard({ onPress }: { onPress: () => void }) {
   );
 }
 
-/* ---------- Utils ---------- */
+/* Utils */
 function getInitials(name?: string) {
   if (!name) return "—";
   const parts = name.trim().split(/\s+/).slice(0, 2);
   return parts.map((p) => p[0]?.toUpperCase()).join("");
 }
-
 function pickColor(seed?: string) {
   const palette = ["#5B8DEF", "#E74C3C", "#27AE60", "#8E44AD", "#F39C12", "#16A085"];
   let h = 0;
   (seed || "x").split("").forEach((c) => (h = (h * 31 + c.charCodeAt(0)) >>> 0));
   return palette[h % palette.length];
 }
-
 function capitalize(s: string) {
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 }
 
-/* ---------- Styles ---------- */
+/* Styles */
 const CARD_RADIUS = 16;
 
 const styles = StyleSheet.create({
-  scrollContainer: { flex: 1 },
-  content: { paddingBottom: 24 },
-  container: { flex: 1, padding: 16, backgroundColor: "transparent" }, // 👈 clave
-  sectionTitle: { marginTop: 12, marginBottom: 8, marginLeft: 8, fontSize: 18, fontWeight: "700" },
-  grid: { paddingHorizontal: 4 },
-  columnWrapper: { justifyContent: "space-between", marginBottom: 12 },
-  cardWrapper: { width: CARD_SIZE, alignItems: "center", marginBottom: 4 },
-  iconBox: {
-    width: CARD_SIZE - 10,
-    height: CARD_SIZE - 10,
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 6,
-  },
- 
+  container: { flex: 1, padding: 16, backgroundColor: "transparent" },
 
   headerBlock: { paddingHorizontal: 16, marginBottom: 8 },
   title: { marginBottom: 4 },
   subtitle: { color: "#6B7280" },
-
-  searchBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F2F4F7",
-    marginHorizontal: 16,
-    marginTop: 12,
-    paddingVertical: 10,
-    borderRadius: 24,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    paddingRight: 14,
-    color: "#111",
-  },
 
   gridContent: {
     paddingHorizontal: 16,
@@ -239,6 +297,44 @@ const styles = StyleSheet.create({
       },
      
     }),
+  },
+
+  /* Botones flotantes */
+  editBtn: {
+    position: "absolute",
+    top: 8,
+    left: 8,
+    backgroundColor: "#3b82f6",
+    borderRadius: 14,
+    width: 28,
+    height: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 2,
+  },
+  deleteBtn: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    backgroundColor: "#ef4444",
+    borderRadius: 14,
+    width: 28,
+    height: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 2,
+  },
+
+  deletingCover: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.25)",
+    borderRadius: CARD_RADIUS,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  deletingText: {
+    color: "#fff",
+    fontWeight: "700",
   },
 
   avatarWrap: {

@@ -29,10 +29,12 @@ export class HttpBaseService<TList, TCreate, TUpdate> {
     return data;
   }
 
-  async update(body: TUpdate): Promise<any> {
-    const { data } = await api.put(this.urlBase, body);
-    return data;
-  }
+ async update(id: number | string, body: TUpdate): Promise<any> {
+  const { data } = await api.put(`${this.urlBase}/${id}`, body);
+  console.log(this.urlBase+"/"+id);
+  return data;
+}
+
 
   async delete(id: number | string): Promise<void> {
     await api.delete(`${this.urlBase}/${id}`);

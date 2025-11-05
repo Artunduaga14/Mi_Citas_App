@@ -1,3 +1,5 @@
+// src/services/hospital/relatedPerson.ts
+import api from "../api";
 import { HttpBaseService } from "../service-base";
 import {
   RelatedPersonList,
@@ -11,26 +13,34 @@ class RelatedPersonServiceClass extends HttpBaseService<
   RelatedPersonEdit
 > {
   constructor() {
-    super("RelatedPerson"); // -> base /RelatedPerson
+    super("RelatedPerson"); // 👈 tu endpoint base
   }
 
-  // Extensiones específicas (si tu API las expone):
+  // 📋 Listar todos los parientes
   async list(): Promise<RelatedPersonList[]> {
-    // GET /RelatedPerson/list
-    const { data } = await (await import("../api")).default.get<RelatedPersonList[]>(
-      `${this.urlBase}/list`
-    );
+    const { data } = await api.get<RelatedPersonList[]>(`${this.urlBase}`);
     return Array.isArray(data) ? data : [];
   }
 
-  async listByPatientId(patientId: number | string): Promise<RelatedPersonList[]> {
-    // GET /RelatedPerson/list?patientId=123
-    const { data } = await (await import("../api")).default.get<RelatedPersonList[]>(
-      `${this.urlBase}/list`,
-      { params: { patientId } }
-    );
+  // 📋 Listar por persona (usa personId)
+  async listByPatientId(personId: number | string): Promise<RelatedPersonList[]> {
+    const pid = typeof personId === "string" ? personId.trim() : personId;
+    const { data } = await api.get<RelatedPersonList[]>(`${this.urlBase}/list`, {
+      params: { personId: pid }, // 👈 tu backend espera `personId`
+    });
     return Array.isArray(data) ? data : [];
   }
+
+  // ➕ Crear persona relacionada
+  async create(data: RelatedPersonCreate) {
+    const res = await api.post(`${this.urlBase}`, data);
+    return res.data;
+  }
+   async Update( body: RelatedPersonEdit): Promise<any> {
+  const { data } = await api.put(`${this.urlBase}/${body.id}`, body);
+  console.log(this.urlBase+"/"+body.id);
+  return data;
+}
 }
 
 export const RelatedPersonService = new RelatedPersonServiceClass();
