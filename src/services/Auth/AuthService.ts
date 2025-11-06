@@ -31,9 +31,8 @@ export class AuthService {
     const decoded: JwtPayload = jwtDecode(token);
     if (!decoded.exp) return false;
 
-    // 👇 fuerza la expiración para probar el refresh
-    const fakeNow = Date.now() + 1000 * 60 * 60; // simula que pasó 1 h
-    return fakeNow < decoded.exp * 1000;
+    // ✅ Validación real del token según su tiempo de expiración
+    return Date.now() < decoded.exp * 1000;
   } catch {
     return false;
   }
