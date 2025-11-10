@@ -28,7 +28,9 @@ const { width } = Dimensions.get("window");
 const NUM_COLS = 2;
 const H_PADDING = 16;
 const GAP = 16;
-const CARD_SIZE = Math.floor((width - H_PADDING * 2 - GAP * (NUM_COLS - 1)) / NUM_COLS);
+const CARD_SIZE = Math.floor(
+  (width - H_PADDING * 2 - GAP * (NUM_COLS - 1)) / NUM_COLS
+);
 
 type Tile = { kind: "person"; data: RelatedPersonList } | { kind: "add" };
 
@@ -38,7 +40,7 @@ export default function RelatedPersonsScreen() {
   const [showModal, setShowModal] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  // NUEVO: item en edición (si hay, el modal va en modo "edit")
+  // item en edición (si hay, el modal va en modo "edit")
   const [editItem, setEditItem] = useState<RelatedPersonList | null>(null);
   const isEdit = !!editItem;
 
@@ -77,7 +79,7 @@ export default function RelatedPersonsScreen() {
     return t;
   }, [filtered]);
 
-  // Tap en tarjeta (si quieres que edite al tocar, puedes llamar onPressEdit aquí)
+  // Tap en tarjeta
   const onPressPerson = (p: RelatedPersonList) => {
     console.log("Tap card:", p.id);
   };
@@ -88,7 +90,7 @@ export default function RelatedPersonsScreen() {
   };
 
   const onPressEdit = (p: RelatedPersonList) => {
-    setEditItem(p);    // modo editar
+    setEditItem(p); // modo editar
     setShowModal(true);
   };
 
@@ -124,8 +126,8 @@ export default function RelatedPersonsScreen() {
       <PersonTile
         item={item.data}
         onPress={() => onPressPerson(item.data)}
-        onEdit={() => onPressEdit(item.data)}     // 👈 botón de editar
-        onDelete={() => handleDelete(item.data)}  // 👈 botón de eliminar
+        onEdit={() => onPressEdit(item.data)}
+        onDelete={() => handleDelete(item.data)}
         deleting={deletingId === item.data.id}
       />
     );
@@ -137,7 +139,9 @@ export default function RelatedPersonsScreen() {
       style={{ flex: 1 }}
       resizeMode="cover"
     >
-      <ThemedView style={[styles.container, { backgroundColor: "transparent" }]}>
+      <ThemedView
+        style={[styles.container, { backgroundColor: "transparent" }]}
+      >
         <HeaderGreeting name="Daniel Gómez" />
 
         <View style={styles.headerBlock}>
@@ -152,7 +156,9 @@ export default function RelatedPersonsScreen() {
         <FlatList
           data={tiles}
           numColumns={2}
-          keyExtractor={(it, idx) => (it.kind === "add" ? "add" : `p-${it.data.id}`) + `-${idx}`}
+          keyExtractor={(it, idx) =>
+            (it.kind === "add" ? "add" : `p-${it.data.id}`) + `-${idx}`
+          }
           renderItem={renderItem}
           contentContainerStyle={styles.gridContent}
           columnWrapperStyle={{ gap: 16 }}
@@ -178,7 +184,7 @@ export default function RelatedPersonsScreen() {
   );
 }
 
-/* ---------- Tarjeta con Editar y Eliminar ---------- */
+/* ---------- Tarjeta con menú de tres puntos ---------- */
 function PersonTile({
   item,
   onPress,
@@ -194,27 +200,46 @@ function PersonTile({
 }) {
   const initials = getInitials(item.fullName);
   const bg = (item as any).color || pickColor(item.fullName);
+  const [menuVisible, setMenuVisible] = useState(false);
 
   return (
     <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={styles.card}>
-      {/* Botón Editar (lápiz) */}
-      <TouchableOpacity
-        onPress={onEdit}
-        hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
-        style={styles.editBtn}
-      >
-        <Ionicons name="create" size={18} color="#fff" />
-      </TouchableOpacity>
+      {/* Tres puntos y menú */}
+      <View style={styles.menuWrapper}>
+        <TouchableOpacity onPress={() => setMenuVisible((v) => !v)}>
+          <Ionicons name="ellipsis-vertical" size={20} color="#000" />
+        </TouchableOpacity>
 
-      {/* Botón Eliminar (basura) */}
-      <TouchableOpacity
-        onPress={onDelete}
-        hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
-        style={styles.deleteBtn}
-      >
-        <Ionicons name="trash" size={18} color="#fff" />
-      </TouchableOpacity>
+        {menuVisible && (
+          <View style={styles.menuBox}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                setMenuVisible(false);
+                onEdit();
+              }}
+            >
+              <Ionicons name="create" size={16} color="#007bff" />
+              <Text style={styles.menuText}>Editar</Text>
+            </TouchableOpacity>
 
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                setMenuVisible(false);
+                onDelete();
+              }}
+            >
+              <Ionicons name="trash" size={16} color="#d11a2a" />
+              <Text style={[styles.menuText, { color: "#d11a2a" }]}>
+                Eliminar
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+
+      {/* Contenido principal */}
       <View style={styles.avatarWrap}>
         <View style={[styles.avatarCircle, { backgroundColor: bg }]}>
           <Text style={styles.avatarText}>{initials}</Text>
@@ -240,7 +265,11 @@ function PersonTile({
 
 function AddCard({ onPress }: { onPress: () => void }) {
   return (
-    <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={[styles.card, styles.addCard]}>
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={onPress}
+      style={[styles.card, styles.addCard]}
+    >
       <View style={styles.addDashed}>
         <Ionicons name="add" size={28} />
       </View>
@@ -295,34 +324,42 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
         shadowOffset: { width: 0, height: 4 },
       },
-     
+      
     }),
   },
 
-  /* Botones flotantes */
-  editBtn: {
-    position: "absolute",
-    top: 8,
-    left: 8,
-    backgroundColor: "#3b82f6",
-    borderRadius: 14,
-    width: 28,
-    height: 28,
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 2,
-  },
-  deleteBtn: {
+  /* Menú tres puntos */
+  menuWrapper: {
     position: "absolute",
     top: 8,
     right: 8,
-    backgroundColor: "#ef4444",
-    borderRadius: 14,
-    width: 28,
-    height: 28,
+    zIndex: 3,
+  },
+  menuBox: {
+    position: "absolute",
+    top: 24,
+    right: 0,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    paddingVertical: 4,
+    minWidth: 120,
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  menuItem: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    zIndex: 2,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    gap: 8,
+  },
+  menuText: {
+    fontSize: 14,
+    color: "#333",
+    fontWeight: "600",
   },
 
   deletingCover: {

@@ -37,8 +37,8 @@ class RelatedPersonServiceClass extends HttpBaseService<
     return res.data;
   }
    async Update( body: RelatedPersonEdit): Promise<any> {
-  const { data } = await api.put(`${this.urlBase}/${body.id}`, body);
-  console.log(this.urlBase+"/"+body.id);
+  const { data } = await api.put(`${this.urlBase}`, body);
+  console.log("[PUT] RelatedPerson →", this.urlBase, body);
   return data;
 }
 }
