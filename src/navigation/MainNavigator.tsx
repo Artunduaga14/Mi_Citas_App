@@ -9,6 +9,7 @@ import { useColorScheme } from '../hooks/useColorScheme'
 import { Ionicons } from '@expo/vector-icons' // usa Ionicons o tu IconSymbol
 import TabTwoScreen from '../screens/Notifications/explore'
 import RelatedPersonsScreen from '../screens/RelatedPersons/relatedPerson'
+import PersonProfile from '../screens/Perfil/PersonPerfil'
 
 const Tab = createBottomTabNavigator()
 
@@ -125,6 +126,39 @@ export default function MainNavigator() {
           ),
         }}
       /> 
+
+        <Tab.Screen
+        name="Perfil"
+        component={PersonProfile}
+        options={{
+          title: '',
+          tabBarIcon: ({ color, size, focused }) => (
+            <View style={{
+              width: focused ? 52 : 40,
+              height: focused ? 52 : 80,
+              borderRadius: 999,
+              backgroundColor: focused ? tint : 'transparent',
+              alignItems: 'center',
+              justifyContent: 'center',
+              // transform: [{ translateY: focused ? -20 : 0 }], // “levanta” el activo
+              shadowColor: '#000',
+              shadowOpacity: focused ? 0.16 : 0,
+              shadowRadius: 10,
+              shadowOffset: { width: 0, height: 4 },
+              elevation: focused ? 6 : 0,
+            }}>
+              <Ionicons
+                name="person"
+                size={focused ? 24 : 30}
+                color={focused ? '#fff' : '#4b5563'}
+              />
+            </View>
+          ),
+        }}
+      /> 
+
     </Tab.Navigator>
+
+    
   )
 }
