@@ -9,7 +9,9 @@ import { useColorScheme } from '../hooks/useColorScheme'
 import { Ionicons } from '@expo/vector-icons' // usa Ionicons o tu IconSymbol
 import TabTwoScreen from '../screens/Notifications/explore'
 import RelatedPersonsScreen from '../screens/RelatedPersons/relatedPerson'
-import PersonProfile from '../screens/Perfil/PersonPerfil'
+import { ReservationView } from '../screens/Reservation/ReservationView'
+
+
 
 const Tab = createBottomTabNavigator()
 
@@ -126,6 +128,36 @@ export default function MainNavigator() {
           ),
         }}
       /> 
+      <Tab.Screen
+  name="Reservation"
+  component={ReservationView}
+  options={{
+    title: '',
+    tabBarIcon: ({ focused }) => (
+      <View
+        style={{
+          width: focused ? 52 : 40,
+          height: focused ? 52 : 40,
+          borderRadius: 999,
+          backgroundColor: focused ? tint : 'transparent',
+          alignItems: 'center',
+          justifyContent: 'center',
+          shadowColor: '#000',
+          shadowOpacity: focused ? 0.16 : 0,
+          shadowRadius: 10,
+          shadowOffset: { width: 0, height: 4 },
+          elevation: focused ? 6 : 0,
+        }}
+      >
+        <Ionicons
+          name="calendar"
+          size={focused ? 24 : 30}
+          color={focused ? '#fff' : '#4b5563'}
+        />
+      </View>
+    ),
+  }}
+/>
 
      
 
