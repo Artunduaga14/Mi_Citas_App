@@ -11,6 +11,8 @@ import TabTwoScreen from '../screens/Notifications/explore'
 import RelatedPersonsScreen from '../screens/RelatedPersons/relatedPerson'
 import { ReservationView } from '../screens/Reservation/ReservationView'
 
+
+
 const Tab = createBottomTabNavigator()
 
 export default function MainNavigator() {
@@ -157,6 +159,10 @@ export default function MainNavigator() {
   }}
 />
 
+     
+
     </Tab.Navigator>
+
+    
   )
 }
