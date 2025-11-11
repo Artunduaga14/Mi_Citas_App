@@ -9,6 +9,7 @@ import { useColorScheme } from '../hooks/useColorScheme'
 import { Ionicons } from '@expo/vector-icons' // usa Ionicons o tu IconSymbol
 import TabTwoScreen from '../screens/Notifications/explore'
 import RelatedPersonsScreen from '../screens/RelatedPersons/relatedPerson'
+import PersonProfile from '../screens/Perfil/PersonPerfil'
 
 const Tab = createBottomTabNavigator()
 
@@ -125,6 +126,11 @@ export default function MainNavigator() {
           ),
         }}
       /> 
+
+     
+
     </Tab.Navigator>
+
+    
   )
 }
