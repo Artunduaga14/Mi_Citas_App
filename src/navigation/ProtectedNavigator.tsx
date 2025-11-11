@@ -3,6 +3,7 @@ import { View, ActivityIndicator } from "react-native";
 import { authService } from "../services/Auth/AuthService";
 import AuthNavigator from "./AuthNavigator";
 import MainNavigator from "./MainNavigator";
+import MainStackNavigator from "./MainStackNavigator";
 
 export default function ProtectedNavigator() {
   const [isAuth, setIsAuth] = useState<boolean | null>(null);
@@ -34,5 +35,5 @@ export default function ProtectedNavigator() {
   }
 
   // 4️⃣ Decide a dónde mandar al usuario
-  return isAuth ? <MainNavigator /> : <AuthNavigator />;
+ return isAuth ? <MainStackNavigator /> : <AuthNavigator />;
 }
