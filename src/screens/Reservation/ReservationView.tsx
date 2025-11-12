@@ -5,12 +5,16 @@ import { coreCitationService } from '../../services/socket/coreCitation.service'
 import { Horario, socketService } from '../../services/socket/socket.service';
 import { authService } from '../../services/Auth/AuthService';
 import { ALERT_TYPE, Dialog, Toast } from 'react-native-alert-notification';
+import { useRoute, useNavigation } from '@react-navigation/native';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export const ReservationView = () => {
+  const route = useRoute();
+  const navigation = useNavigation();
+  const { typeCitationId } = route.params as { typeCitationId: number };
   const [blocks, setBlocks] = useState<Horario[]>([]);
   const [selectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const scheduleHourId = 1;
-  const typeCitationId = 4; // 🔹 temporalmente fijo (ej: Consulta externa)
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
@@ -30,16 +34,13 @@ export const ReservationView = () => {
       setToken(storedToken);
 
       try {
-        // 1️⃣ Obtener bloques vía REST
         const list = await coreCitationService.getAvailableBlocks(typeCitationId, selectedDate, true);
         setBlocks(list);
         socketService.setBlocks(list);
 
-        // 2️⃣ Conectarse al Hub con token real
         await socketService.connect(storedToken);
         await socketService.joinDay(scheduleHourId, selectedDate);
 
-        // 3️⃣ Escuchar cambios
         const sub = socketService.blocksChanges$.subscribe(setBlocks);
 
         return () => {
@@ -72,74 +73,93 @@ export const ReservationView = () => {
       return;
     }
 
-Dialog.show({
-  type: ALERT_TYPE.INFO,
-  title: 'Confirmar cita',
-  textBody: `¿Quieres agendar la cita a las ${formatHora(h.hora)}?`,
-  button: 'Sí, confirmar',
-  autoClose: false,
-  onPressButton: async () => {
-    Dialog.hide();
-    const result = await socketService.confirm(h.hora);
+    Dialog.show({
+      type: ALERT_TYPE.INFO,
+      title: 'Confirmar cita',
+      textBody: `¿Quieres agendar la cita a las ${formatHora(h.hora)}?`,
+      button: 'Sí, confirmar',
+      autoClose: false,
+      onPressButton: async () => {
+        Dialog.hide();
+        const result = await socketService.confirm(h.hora);
 
-    if (result.success) {
-      Toast.show({
-        type: ALERT_TYPE.SUCCESS,
-        title: '¡Éxito!',
-        textBody: 'Tu cita fue registrada correctamente.',
-      });
-    } else {
-      Dialog.show({
-        type: ALERT_TYPE.DANGER,
-        title: 'Error',
-        textBody: result.reason || 'No se pudo agendar. Intenta nuevamente.',
-        button: 'OK',
-      });
-    }
-  },
-});
+        if (result.success) {
+          Toast.show({
+            type: ALERT_TYPE.SUCCESS,
+            title: '¡Éxito!',
+            textBody: 'Tu cita fue registrada correctamente.',
+          });
+        } else {
+          Dialog.show({
+            type: ALERT_TYPE.DANGER,
+            title: 'Error',
+            textBody: result.reason || 'No se pudo agendar. Intenta nuevamente.',
+            button: 'OK',
+          });
+        }
+      },
+    });
 
-// Mostramos aparte el botón “Cancelar” como Toast alternativo
-Toast.show({
-  type: ALERT_TYPE.WARNING,
-  title: '¿Deseas cancelar?',
-  textBody: 'Presiona aquí para cancelar la reserva.',
-  autoClose: false,
-  onPress: async () => {
-    await socketService.unlock(h.hora);
-    Toast.hide();
-    Dialog.hide();
-  },
-});
-
-
+    Toast.show({
+      type: ALERT_TYPE.WARNING,
+      title: '¿Deseas cancelar?',
+      textBody: 'Presiona aquí para cancelar la reserva.',
+      autoClose: false,
+      onPress: async () => {
+        await socketService.unlock(h.hora);
+        Toast.hide();
+        Dialog.hide();
+      },
+    });
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Agenda de citas</Text>
-      <ScrollView>
+      {/* Header mejorado */}
+      <View style={styles.headerContainer}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <MaterialIcons name="arrow-back" size={24} color="#333" />
+        </TouchableOpacity>
+        <Text style={styles.header}>Agenda de citas</Text>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         {blocks.map((h, i) => (
           <TouchableOpacity
             key={i}
             style={[styles.card, !h.estaDisponible && styles.cardDisabled]}
             onPress={() => onPress(h)}
+            disabled={!h.estaDisponible}
           >
-            <Text style={styles.time}>Hora: {formatHora(h.hora)}</Text>
-            <Text style={styles.doctor}>Dr. Ortis Acosta Jhoyner Duvan</Text>
-            <Text style={styles.specialty}>Consulta Externa</Text>
+            <View style={styles.cardContent}>
+              <View style={styles.timeContainer}>
+                <MaterialIcons name="schedule" size={20} color="#4FA8DE" />
+                <Text style={styles.time}>{formatHora(h.hora)}</Text>
+              </View>
+              <View style={styles.divider} />
+              <View style={styles.infoContainer}>
+                <View style={styles.doctorRow}>
+                  <MaterialIcons name="person" size={18} color="#4FA8DE" />
+                  <Text style={styles.doctor}>Dr. Ortis Acosta Jhoyner Duvan</Text>
+                </View>
+                <View style={styles.specialtyRow}>
+                  <MaterialIcons name="local-hospital" size={16} color="#999" />
+                  <Text style={styles.specialty}>Consulta Externa</Text>
+                </View>
+              </View>
+            </View>
+            {h.estaDisponible && (
+              <View style={styles.availableBadge}>
+                <Text style={styles.availableText}>Disponible</Text>
+              </View>
+            )}
           </TouchableOpacity>
         ))}
       </ScrollView>
-
-      <TouchableOpacity style={styles.registerButton}>
-        <Text style={styles.registerText}>Registrar</Text>
-      </TouchableOpacity>
     </View>
   );
 };
 
-// 🔹 Conversión a formato 12h
 const formatHora = (hora: string) => {
   const [hh, mm] = hora.split(':');
   const h = parseInt(hh, 10);
@@ -148,42 +168,116 @@ const formatHora = (hora: string) => {
   return `${h12}:${mm} ${ampm}`;
 };
 
-// 🔹 Estilos visuales
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F0F3F9',
-    padding: 20,
+    backgroundColor: '#F5F7FA',
+  },
+  headerContainer: {
+    backgroundColor: '#fff',
+    paddingTop: 50,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F5F7FA',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
   header: {
-    textAlign: 'center',
-    fontSize: 22,
-    fontWeight: '600',
-    marginBottom: 10,
-    color: '#333',
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 30,
   },
   card: {
-    backgroundColor: '#4FA8DE',
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    marginBottom: 14,
+    borderWidth: 2,
+    borderColor: '#4FA8DE',
     shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
     shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+    overflow: 'hidden',
   },
   cardDisabled: {
-    backgroundColor: '#A0AFC4',
+    backgroundColor: '#F5F7FA',
+    borderColor: '#B0BEC5',
+    shadowOpacity: 0.05,
   },
-  time: { color: '#fff', fontWeight: '700' },
-  doctor: { color: '#fff', marginTop: 4 },
-  specialty: { color: '#eaf3ff', fontSize: 12 },
-  registerButton: {
-    marginTop: 15,
-    backgroundColor: '#4FA8DE',
-    borderRadius: 10,
-    padding: 14,
+  cardContent: {
+    padding: 18,
+  },
+  timeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  time: {
+    color: '#4FA8DE',
+    fontWeight: '700',
+    fontSize: 20,
+    marginLeft: 8,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
+    marginVertical: 12,
+  },
+  infoContainer: {
+    gap: 8,
+  },
+  doctorRow: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  registerText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+  doctor: {
+    color: '#333',
+    fontSize: 15,
+    fontWeight: '600',
+    marginLeft: 8,
+    flex: 1,
+  },
+  specialtyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  specialty: {
+    color: '#666',
+    fontSize: 13,
+    marginLeft: 6,
+  },
+  availableBadge: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    backgroundColor: '#4FA8DE',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  availableText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700',
+  },
 });
