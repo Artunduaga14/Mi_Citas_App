@@ -12,21 +12,25 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { PersonService } from "../../services/hospital/personServices";
 import { PersonList } from "../../models/Gestion/personModels";
+import { authService } from "../../services/Auth/AuthService";
 
 export default function PersonProfile() {
-  const navigation = useNavigation<any>();   // 👈 AQUÍ se usa el hook
+  const navigation = useNavigation<any>();
 
   const [person, setPerson] = useState<PersonList | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const personId = 2; // por ahora fijo en persona 2
-
+ 
+  
   useEffect(() => {
     loadPerson();
   }, []);
 
   const loadPerson = async () => {
     try {
+      const personId = await authService.getUserId(); //espera la promesa
+      if (!personId) return; // validación por si devuelve null
+
       const data = await PersonService.getById(personId);
       setPerson(data);
     } catch (err) {

@@ -1,21 +1,48 @@
-import { StyleSheet, View, TouchableOpacity } from "react-native";
+import { StyleSheet, View, TouchableOpacity, Alert } from "react-native";
 import ThemedText from "../ui/ThemedText";
 import ThemedView from "../ui/ThemedView";
-import { MaterialIcons, Entypo } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import React from "react";
 import { useNavigation } from "@react-navigation/native";
+import { authService } from "../../services/Auth/AuthService";
 
 type Props = {
   name: string; // Nombre del usuario
 };
 
 export default function HeaderGreeting({ name }: Props) {
-  // 👇 Usa any para que TS no moleste con "never"
   const navigation = useNavigation<any>();
+
+  // 🔹 Maneja el cierre de sesión
+  const handleLogout = async () => {
+    Alert.alert(
+      "Cerrar sesión",
+      "¿Seguro que deseas cerrar sesión?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Cerrar sesión",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await authService.logout();
+              navigation.reset({
+                index: 0,
+                routes: [{ name: "LoginScreen" }], // 👈 redirige a Login
+              });
+            } catch (error) {
+              console.error("Error cerrando sesión:", error);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
 
   return (
     <ThemedView style={styles.container}>
-      {/* 👤 Icono de usuario presionable */}
+      {/* 👤 Icono de perfil */}
       <TouchableOpacity onPress={() => navigation.navigate("Perfil")}>
         <MaterialIcons name="account-circle" size={40} color="gray" />
       </TouchableOpacity>
@@ -26,8 +53,10 @@ export default function HeaderGreeting({ name }: Props) {
         <ThemedText type="subtitle">{name}</ThemedText>
       </View>
 
-      {/* ☰ Icono de menú */}
-      {/* <Entypo name="menu" size={28} color="black" style={styles.menuIcon} /> */}
+      {/* 🚪 Botón de logout */}
+      <TouchableOpacity onPress={handleLogout}>
+        <MaterialIcons name="logout" size={28} color="gray" />
+      </TouchableOpacity>
     </ThemedView>
   );
 }
@@ -49,8 +78,5 @@ const styles = StyleSheet.create({
   textContainer: {
     flex: 1,
     marginLeft: 10,
-  },
-  menuIcon: {
-    marginLeft: "auto",
   },
 });
