@@ -142,7 +142,7 @@ export default function RelatedPersonsScreen() {
       <ThemedView
         style={[styles.container, { backgroundColor: "transparent" }]}
       >
-        <HeaderGreeting name="Daniel Gómez" />
+        <HeaderGreeting name="Mauricio Noscue" />
 
         <View style={styles.headerBlock}>
           <ThemedText type="title2" style={styles.title}>
