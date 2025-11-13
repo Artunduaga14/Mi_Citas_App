@@ -17,6 +17,8 @@ import HeaderGreeting from "../../components/cards/HeaderGreeting";
 import ThemedText from "../../components/ui/ThemedText";
 import ThemedView from "../../components/ui/ThemedView";
 import { HttpService } from "../../services/GenericServices";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useNavigation } from "@react-navigation/native";
 
 const { width } = Dimensions.get("window");
 const NUM_COLS = 3;
@@ -56,7 +58,17 @@ const normalize = (s: string) =>
     .replace(/[^a-z0-9\s]/g, "")
     .trim();
 
+
+  type RootStackParamList = {
+  Home: undefined;
+  ReservationView: { typeCitationId: number };
+};
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Home">;
+
+
 export default function HomeScreen() {
+   const navigation = useNavigation<NavigationProp>();
   const [citations, setCitations] = useState<any[]>([]);
   const [showAll, setShowAll] = useState(false); // control del modal
 
@@ -167,7 +179,9 @@ export default function HomeScreen() {
                   <TouchableOpacity
                     activeOpacity={0.8}
                     style={styles.iconBox}
-                    onPress={() => console.log("Seleccionado:", item)}
+                     onPress={() =>
+                      navigation.navigate("ReservationView", { typeCitationId: Number(item.id) })
+                    }
                   >
                     <Image
                       source={

@@ -1,39 +1,41 @@
 import React, { useEffect, useState } from "react";
-import { View, ActivityIndicator } from "react-native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { authService } from "../services/Auth/AuthService";
 import AuthNavigator from "./AuthNavigator";
-import MainNavigator from "./MainNavigator";
 import MainStackNavigator from "./MainStackNavigator";
+import { LoadingOverlay } from "../utils/LoadingOverlay";
+import { useIsFocused } from "@react-navigation/native";
+
+const Stack = createNativeStackNavigator();
 
 export default function ProtectedNavigator() {
   const [isAuth, setIsAuth] = useState<boolean | null>(null);
+  const isFocused = useIsFocused();   // 👈 SECRETO
 
   useEffect(() => {
-    const checkAuth = async () => {
-      // 1️⃣ Verifica si el access token sigue siendo válido
+    const check = async () => {
       const valid = await authService.isAuthenticated();
 
-      // 2️⃣ Si no es válido, intenta refrescarlo
       if (!valid) {
-        const refreshed = await authService.refreshTokens(); // 🔄 aquí se usa el refresh
+        const refreshed = await authService.refreshTokens();
         setIsAuth(refreshed);
       } else {
         setIsAuth(true);
       }
     };
 
-    checkAuth();
-  }, []);
+    check();
+  }, [isFocused]);   // 👈 SE EJECUTA CADA VEZ QUE ENTRAS A ProtectedNavigator
 
-  // 3️⃣ Mientras valida, muestra un loader
-  if (isAuth === null) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#1976d2" />
-      </View>
-    );
-  }
+  if (isAuth === null) return <LoadingOverlay visible={true} />;
 
-  // 4️⃣ Decide a dónde mandar al usuario
- return isAuth ? <MainStackNavigator /> : <AuthNavigator />;
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {isAuth ? (
+        <Stack.Screen name="MainStack" component={MainStackNavigator} />
+      ) : (
+        <Stack.Screen name="AuthStack" component={AuthNavigator} />
+      )}
+    </Stack.Navigator>
+  );
 }

@@ -2,6 +2,7 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import MainNavigator from "./MainNavigator";
 import PersonProfile from "../screens/Perfil/PersonPerfil";
+import { ReservationView } from "../screens/Reservation/ReservationView";
 
 const Stack = createNativeStackNavigator();
 
@@ -13,6 +14,8 @@ export default function MainStackNavigator() {
       
       {/* 👇 Esta pantalla ya NO está en el tab, pero es navegable */}
       <Stack.Screen name="Perfil" component={PersonProfile} />
+
+      <Stack.Screen name="ReservationView" component={ReservationView} />
     </Stack.Navigator>
   );
 }

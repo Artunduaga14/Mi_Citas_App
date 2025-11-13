@@ -39,40 +39,40 @@ export default function LoginScreen() {
   ];
 
   // ================= HANDLERS =================
-  const handleLogin = async (data: any) => {
-    try {
-      setLoading(true);
+ const handleLogin = async (data: any) => {
+  try {
+    setLoading(true);
 
-      const response = await HttpService.login("user", data);
+    const response = await HttpService.login("user", data);
 
-      // 👇 si tu backend retorna el token dentro de response.data.accessToken
-      const token = response?.data?.accessToken;
-      if (!token) {
-        Alert.alert("❌ Error", "No se recibió token del servidor");
-        return;
-      }
-
-      // 🧠 1️⃣ Guarda el token antes de navegar
-    await authService.setTokens(response.data.accessToken, response.data.refreshToken);
-
-      console.log("🔐 Token guardado en AsyncStorage correctamente");
-
-      // 🧠 2️⃣ Verifica si se decodifica bien (opcional, modo debug)
-      if (__DEV__) {
-        const userId = await authService.getUserId();
-        console.log("👤 Usuario autenticado con ID:", userId);
-      }
-
-      // 🧭 3️⃣ Navega solo después de guardar el token
-      Alert.alert("✅ Login correcto", "Bienvenido");
-      // navigation.reset({ index: 0, routes: [{ name: "Main" }] });
-    } catch (error: any) {
-      console.error("❌ Error en login:", error);
-      Alert.alert("⚠️ Error", "No se pudo conectar con el servidor");
-    } finally {
-      setLoading(false);
+    const token = response?.data?.accessToken;
+    if (!token) {
+      Alert.alert("❌ Error", "No se recibió token del servidor");
+      return;
     }
-  };
+
+    await authService.setTokens(
+      response.data.accessToken,
+      response.data.refreshToken
+    );
+
+    Alert.alert("✅ Login correcto", "Bienvenido");
+
+    // 🔥 LA REDIRECCIÓN CORRECTA
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "Protected" }],
+    });
+
+  } catch (error) {
+    console.error(error);
+    Alert.alert("⚠️ Error", "No se pudo conectar con el servidor");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
 
   const handleForgot = async (data: any) => {
