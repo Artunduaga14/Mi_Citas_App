@@ -26,10 +26,10 @@ export default function HeaderGreeting({ name }: Props) {
           onPress: async () => {
             try {
               await authService.logout();
-              navigation.reset({
-                index: 0,
-                routes: [{ name: "LoginScreen" }], // 👈 redirige a Login
-              });
+               navigation.reset({
+      index: 0,
+      routes: [{ name: "Protected" }],
+    });
             } catch (error) {
               console.error("Error cerrando sesión:", error);
             }

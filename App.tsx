@@ -7,23 +7,20 @@ import AppNavigator from './src/navigation/AppNavigator';
 import { useColorScheme } from './src/hooks/useColorScheme';
 import ProtectedNavigator from './src/navigation/ProtectedNavigator';
 
-// 🧡 Importa el provider del sistema de alertas
+// Importa el provider del sistema de alertas
 import { AlertNotificationRoot } from 'react-native-alert-notification';
+import RootNavigator from './src/navigation/RootNavigator';
 
 export default function App() {
-  const colorScheme = useColorScheme();
+  const color = useColorScheme();
+  const [loaded] = useFonts({ SpaceMono: require('./assets/fonts/SpaceMono-Regular.ttf') });
 
-  const [loaded] = useFonts({
-    SpaceMono: require('./assets/fonts/SpaceMono-Regular.ttf'),
-  });
   if (!loaded) return null;
 
   return (
-    // 🔹 Envolvemos todo con el provider de AlertNotification
-    <AlertNotificationRoot theme={colorScheme === 'dark' ? 'dark' : 'light'}>
-      <NavigationContainer theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <StatusBar style="auto" />
-        <ProtectedNavigator />
+    <AlertNotificationRoot>
+      <NavigationContainer theme={color === 'dark' ? DarkTheme : DefaultTheme}>
+        <RootNavigator />
       </NavigationContainer>
     </AlertNotificationRoot>
   );
