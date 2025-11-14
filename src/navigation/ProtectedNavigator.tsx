@@ -5,6 +5,7 @@ import AuthNavigator from "./AuthNavigator";
 import MainStackNavigator from "./MainStackNavigator";
 import { LoadingOverlay } from "../utils/LoadingOverlay";
 import { useIsFocused } from "@react-navigation/native";
+import { notificationSocket } from "../services/socket/notification.socket";
 
 const Stack = createNativeStackNavigator();
 
@@ -22,6 +23,16 @@ export default function ProtectedNavigator() {
       } else {
         setIsAuth(true);
       }
+
+
+            // 🚀 CONECTAR SOCKET DE NOTIFICACIONES
+      const token = await authService.getToken();
+      if (token) {
+        await notificationSocket.connect(token);
+        console.log("🔔 Notificaciones activadas");
+      }
+
+
     };
 
     check();
