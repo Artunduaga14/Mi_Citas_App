@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import MainNavigator from "./MainNavigator";
 import PersonProfile from "../screens/Perfil/PersonPerfil";
 import { ReservationView } from "../screens/Reservation/ReservationView";
+import NotificationsScreen from "../screens/Notifications/NotificationScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -16,6 +17,8 @@ export default function MainStackNavigator() {
       <Stack.Screen name="Perfil" component={PersonProfile} />
 
       <Stack.Screen name="ReservationView" component={ReservationView} />
+      <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
+
     </Stack.Navigator>
   );
 }

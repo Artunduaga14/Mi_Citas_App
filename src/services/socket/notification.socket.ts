@@ -2,6 +2,7 @@ import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signal
 import { BehaviorSubject } from "rxjs";
 import { environment } from "../../../environment/environment.dev";
 import { NotificationItem } from "../../models/NotificationItem";
+import { notificationStore } from "../../components/ui/notificationStore";
 
 class NotificationSocketService {
   private connection?: HubConnection;
@@ -24,6 +25,10 @@ class NotificationSocketService {
       const old = this.items$.value;
       this.items$.next([notification, ...old]);
     });
+
+    this.connection.on("ReceiveNotification", (notif) => {
+  notificationStore.addNotification(notif);
+});
 
     await this.connection.start();
     console.log("📡 Socket de notificaciones conectado");

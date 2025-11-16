@@ -130,36 +130,36 @@ export default function MainNavigator() {
         }}
       /> 
 
-      <Tab.Screen
-  name="NotificationsScreen"
-  component={NotificationsScreen}
-  options={{
-    title: "",
-    tabBarIcon: ({ focused }) => (
-      <View
-        style={{
-          width: focused ? 52 : 40,
-          height: focused ? 52 : 40,
-          borderRadius: 999,
-          backgroundColor: focused ? tint : "transparent",
-          alignItems: "center",
-          justifyContent: "center",
-          shadowColor: "#000",
-          shadowOpacity: focused ? 0.16 : 0,
-          shadowRadius: 10,
-          shadowOffset: { width: 0, height: 4 },
-          elevation: focused ? 6 : 0,
-        }}
-      >
-        <Ionicons
-          name="notifications"
-          size={focused ? 24 : 30}
-          color={focused ? "#fff" : "#4b5563"}
-        />
-      </View>
-    ),
-  }}
-/>
+        {/* <Tab.Screen
+    name="NotificationsScreen"
+    component={NotificationsScreen}
+    options={{
+      title: "",
+      tabBarIcon: ({ focused }) => (
+        <View
+          style={{
+            width: focused ? 52 : 40,
+            height: focused ? 52 : 40,
+            borderRadius: 999,
+            backgroundColor: focused ? tint : "transparent",
+            alignItems: "center",
+            justifyContent: "center",
+            shadowColor: "#000",
+            shadowOpacity: focused ? 0.16 : 0,
+            shadowRadius: 10,
+            shadowOffset: { width: 0, height: 4 },
+            elevation: focused ? 6 : 0,
+          }}
+        >
+          <Ionicons
+            name="notifications"
+            size={focused ? 24 : 30}
+            color={focused ? "#fff" : "#4b5563"}
+          />
+        </View>
+      ),
+    }}
+  /> */}
 
 
      

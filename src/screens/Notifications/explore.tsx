@@ -26,7 +26,7 @@ export default function TabTwoScreen() {
   const loadAppointments = async () => {
     try {
        const userId = await authService.getUserId();
-      const res = await HttpService.get(`/Citation/list/${userId}`);
+      const res = await HttpService.get(`Citation/list/${userId}`);
 
       const items: Appointment[] = Array.isArray(res) ? res : [];
 
