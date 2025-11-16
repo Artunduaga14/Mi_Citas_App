@@ -69,13 +69,22 @@ async login(endpoint: string, data: LoginModel) {
   }
 },
 
-
-  
   async forgotPassword(email:string){
 
     const response  = await api.post('user/forgot-password',email)
     return response;
+  },
+
+
+  async GetAllUsers(endpoint: string){
+    const response = await api.get(`/${endpoint}/all`);
+
+    console.log("📥 [HTTP GET]", `/${endpoint}`, "→", response.status, `(${response.statusText})`);
+    console.log("🧾 Response (parsed):", JSON.stringify(response.data, null, 2));
+    return response;
   }
+
+
 
 
 };
