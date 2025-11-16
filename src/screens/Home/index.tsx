@@ -138,7 +138,7 @@ export default function HomeScreen() {
         <ThemedView
           style={[styles.container, { backgroundColor: "transparent" }]}
         >
-          <HeaderGreeting name="Mauricio Noscue " />
+          <HeaderGreeting/>
 
           <BannerCard
             image={require("../../../assets/images/Imagen1.png")}
