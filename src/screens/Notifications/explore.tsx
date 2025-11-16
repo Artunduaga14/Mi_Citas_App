@@ -62,7 +62,7 @@ export default function TabTwoScreen() {
       resizeMode="cover"
     >
       <ThemedView style={[styles.container, { backgroundColor: "transparent" }]}>
-        <HeaderGreeting name="Mauricio Noscue" />
+        <HeaderGreeting/>
 
         <ThemedText type="title" style={styles.title}>Actividad</ThemedText>
 

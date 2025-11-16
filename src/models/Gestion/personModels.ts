@@ -1,9 +1,11 @@
+// src/models/Gestion/personModels.ts
 
- // Interfaces
+// Lo que llega del backend para mostrar el perfil
 export interface PersonList {
   id: number;
   fullName: string;
   fullLastName: string;
+  documentTypeId: number;           // 👈 AÑADIDO
   documentTypeName: string | null;
   documentTypeAcronymName: string | null;
   document: string;
@@ -16,9 +18,10 @@ export interface PersonList {
   isDeleted: boolean;
   registrationDate: string;
 }
- // Interfaces
+
+// Lo que se envía al backend para actualizar
 export interface PersonUpdate {
-  id:number
+  id: number;
   fullName: string;
   fullLastName: string;
   documentTypeId: number;
@@ -29,7 +32,6 @@ export interface PersonUpdate {
   gender: string;
   healthRegime: string;
 }
-
 
 export interface UserDetailDto {
   fullName: string;

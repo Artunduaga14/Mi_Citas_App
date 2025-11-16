@@ -1,10 +1,14 @@
-import api from "../api"; // tu axios preconfigurado
-// Si usas HttpBaseService, puedes extenderlo también.
-
-import { PersonList, PersonUpdate, UserDetailDto } from "../../models/Gestion/personModels";
+// src/services/hospital/personServices.ts
+import api from "../api";
+import {
+  PersonList,
+  PersonUpdate,
+  UserDetailDto,
+} from "../../models/Gestion/personModels";
+import { HttpService } from "../GenericServices";
 
 class PersonServiceClass {
-  private base = "Person";
+  private base = "Person"; // tu controlador PersonController
 
   async list(): Promise<PersonList[]> {
     const { data } = await api.get<PersonList[]>(`${this.base}/list`);
@@ -16,21 +20,42 @@ class PersonServiceClass {
     return data;
   }
 
-  // Detalle enriquecido para el usuario logueado (si tu API lo expone)
+  // Detalle del usuario actual (si tu API lo expone en /Person/me)
   async getCurrentUserDetail(): Promise<UserDetailDto> {
     const { data } = await api.get<UserDetailDto>(`${this.base}/me`);
     return data;
   }
 
-  async update(dto: PersonUpdate): Promise<void> {
-    await api.put(`${this.base}/${dto.id}`, dto);
+  // 🔧 IMPORTANTE: usar el id de la URL, que debe coincidir con el del DTO
+   async update(body: PersonUpdate): Promise<any> {
+    const { data } = await api.put(`${this.base}`, body);
+    console.log("[PUT] Person →", this.base, body);
+    return data;
   }
-
-  // (opcional) crear persona si tu API lo permite
-  // async create(dto: PersonCreate): Promise<number> { ... }
-
-  // (opcional) eliminar
-  // async delete(id: number): Promise<void> { await api.delete(`${this.base}/${id}`) }
 }
 
 export const PersonService = new PersonServiceClass();
+
+// ===== Catálogos =====
+export interface DocumentTypeDto {
+  id: number;
+  name: string;
+  acronym?: string;
+}
+
+export interface EpsDto {
+  id: number;
+  name: string;
+}
+
+export const CatalogService = {
+  async getDocumentTypes(): Promise<DocumentTypeDto[]> {
+    const res = await HttpService.get("DocumentType");
+    return Array.isArray(res) ? res : [];
+  },
+
+  async getEps(): Promise<EpsDto[]> {
+    const res = await HttpService.get("EPS");
+    return Array.isArray(res) ? res : [];
+  },
+};
