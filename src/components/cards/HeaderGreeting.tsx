@@ -1,3 +1,4 @@
+// src/components/cards/HeaderGreeting.tsx
 import { StyleSheet, View, TouchableOpacity, Alert } from "react-native";
 import ThemedText from "../ui/ThemedText";
 import ThemedView from "../ui/ThemedView";
@@ -17,33 +18,33 @@ type Props = {
 export default function HeaderGreeting({ name }: Props) {
   const navigation = useNavigation<any>();
   const [person, setPerson] = useState<PersonList | null>(null);
-const [unread, setUnread] = useState(0);
-  
-// 👉 Efecto 1: Suscripción al contador de notificaciones
-useEffect(() => {
-  const sub: Subscription = notificationStore.unreadCount$.subscribe((count) =>
-    setUnread(count)
-  );
+  const [unread, setUnread] = useState(0);
 
-  return () => sub.unsubscribe();
-}, []);
+  // 👉 Efecto 1: Suscripción al contador de notificaciones
+  useEffect(() => {
+    const sub: Subscription = notificationStore.unreadCount$.subscribe(
+      (count) => setUnread(count)
+    );
 
-// 👉 Efecto 2: Cargar info de la persona
-useEffect(() => {
-  const loadPerson = async () => {
-    try {
-      const userId = await authService.getUserId();
-      if (!userId) return;
+    return () => sub.unsubscribe();
+  }, []);
 
-      const info = await PersonService.getById(userId);
-      setPerson(info);
-    } catch (error) {
-      console.error("Error cargando persona:", error);
-    }
-  };
+  // 👉 Efecto 2: Cargar info de la persona
+  useEffect(() => {
+    const loadPerson = async () => {
+      try {
+        const userId = await authService.getUserId();
+        if (!userId) return;
 
-  loadPerson();
-}, []);
+        const info = await PersonService.getById(userId);
+        setPerson(info);
+      } catch (error) {
+        console.error("Error cargando persona:", error);
+      }
+    };
+
+    loadPerson();
+  }, []);
 
   // Nombre visible en "Hola, Karen Artunduaga"
   const displayName = person
@@ -85,7 +86,6 @@ useEffect(() => {
 
   return (
     <ThemedView style={styles.container}>
-      
       {/* 🔵 Avatar con iniciales */}
       <TouchableOpacity onPress={() => navigation.navigate("Perfil")}>
         <View style={styles.avatar}>
@@ -111,20 +111,17 @@ useEffect(() => {
             <ThemedText type="default" style={styles.badgeText}>
               {unread}
             </ThemedText>
-
           </View>
         )}
       </TouchableOpacity>
 
       {/* Logout */}
-      <TouchableOpacity onPress={handleLogout}>
+      <TouchableOpacity onPress={handleLogout} testID="logout-button">
         <MaterialIcons name="logout" size={28} color="gray" />
       </TouchableOpacity>
-
     </ThemedView>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -145,7 +142,8 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 10,
   },
-   notificationContainer: {
+
+  notificationContainer: {
     marginRight: 12,
   },
 
@@ -165,7 +163,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
   },
-  
+
   badge: {
     position: "absolute",
     top: -4,
@@ -178,6 +176,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+
   badgeText: {
     color: "#fff",
     fontSize: 10,

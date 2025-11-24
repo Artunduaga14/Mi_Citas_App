@@ -1,3 +1,4 @@
+// src/components/cards/RelatedPersonCard.tsx
 import React from "react";
 import {
   View,
@@ -23,9 +24,16 @@ type Props = {
   item: RelatedPersonList;
   onPressDetails?: (item: RelatedPersonList) => void;
   subtitleText?: string;
+  /** TestID opcional para pruebas, por defecto: "related-person-card" */
+  testID?: string;
 };
 
-export default function RelatedPersonCard({ item, onPressDetails, subtitleText }: Props) {
+export default function RelatedPersonCard({
+  item,
+  onPressDetails,
+  subtitleText,
+  testID,
+}: Props) {
   // Subtítulo: prioridad -> prop, relation, estado activo/inactivo
   const subtitle =
     subtitleText ??
@@ -42,11 +50,21 @@ export default function RelatedPersonCard({ item, onPressDetails, subtitleText }
   const pillRightText = item.document || "N/D";
 
   return (
-    <View style={[styles.card, item.color ? { borderBottomColor: item.color } : null]}>
+    <View
+      testID={testID ?? "related-person-card"}
+      style={[
+        styles.card,
+        item.color ? { borderBottomColor: item.color } : null,
+      ]}
+    >
       {/* Cabecera */}
       <View style={styles.headerRow}>
         <View style={styles.leftIconBubble}>
-          <MaterialCommunityIcons name="account-outline" size={28} color="#4B7FD6" />
+          <MaterialCommunityIcons
+            name="account-outline"
+            size={28}
+            color="#4B7FD6"
+          />
         </View>
 
         {/* Título: nombre completo */}
@@ -87,6 +105,7 @@ export default function RelatedPersonCard({ item, onPressDetails, subtitleText }
         <View style={{ flex: 1 }} />
 
         <TouchableOpacity
+          testID="related-person-detail-button"
           activeOpacity={0.85}
           style={styles.detailBtn}
           onPress={() => onPressDetails?.(item)}
@@ -202,3 +221,4 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 });
+

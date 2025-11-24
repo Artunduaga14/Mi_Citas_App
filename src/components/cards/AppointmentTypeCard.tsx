@@ -10,12 +10,13 @@ type Props = {
 
 export default function AppointmentTypeCard({ image, label }: Props) {
   return (
-    <TouchableOpacity style={styles.card}>
+    <TouchableOpacity style={styles.card} testID="appointment-type-card">
       <ImageBackground
         source={image}
         style={styles.image}
         imageStyle={{ borderRadius: 16 }}
         resizeMode="cover"
+         testID="appointment-type-image" 
       />
       <ThemedText style={styles.label}>{label}</ThemedText>
     </TouchableOpacity>

@@ -1,46 +1,61 @@
-import { PropsWithChildren, useState } from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+// src/components/common/Collapsible.tsx
+import React, { useState } from "react";
+import { TouchableOpacity, View, StyleSheet } from "react-native";
+import ThemedText from "../ui/ThemedText";
+import { IconSymbol } from "../ui/IconSymbol";
+import ThemedView from "../ui/ThemedView";
 
-import  ThemedText  from '../ui/ThemedText';
-import  ThemedView  from '../ui/ThemedView';
-import { IconSymbol } from '../ui/IconSymbol';
-import { Colors } from '../../constants/Colors';
-import { useColorScheme } from '../../hooks/useColorScheme';
-import React from 'react';
+type Props = {
+  title: string;
+  children: React.ReactNode;
+};
 
-export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const theme = useColorScheme() ?? 'light';
+export function Collapsible({ title, children }: Props) {
+  const [open, setOpen] = useState(false);
 
   return (
-    <ThemedView>
+    <ThemedView style={styles.container}>
+      {/* Header que abre/cierra */}
       <TouchableOpacity
-        style={styles.heading}
-        onPress={() => setIsOpen((value) => !value)}
-        activeOpacity={0.8}>
+        style={styles.header}
+        onPress={() => setOpen(!open)}
+        testID="collapsible-header"
+      >
         <IconSymbol
-          name="chevron.right"
-          size={18}
-          weight="medium"
-          color={theme === 'light' ? Colors.light.icon : Colors.dark.icon}
-          style={{ transform: [{ rotate: isOpen ? '90deg' : '0deg' }] }}
+          name={open ? "chevron.down" : "chevron.right"}
+          size={22}
+          color="#444"
         />
 
-        <ThemedText type="defaultSemiBold">{title}</ThemedText>
+        <ThemedText style={styles.title}>{title}</ThemedText>
       </TouchableOpacity>
-      {isOpen && <ThemedView style={styles.content}>{children}</ThemedView>}
+
+      {/* SOLO se renderiza cuando está abierto */}
+      {open && (
+        <View style={styles.content} testID="collapsible-content">
+          {children}
+        </View>
+      )}
     </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  heading: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
+  container: {
+    marginVertical: 8,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+  },
+  title: {
+    marginLeft: 8,
+    fontSize: 16,
+    fontWeight: "600",
   },
   content: {
-    marginTop: 6,
-    marginLeft: 24,
+    marginTop: 8,
+    paddingLeft: 30,
   },
 });

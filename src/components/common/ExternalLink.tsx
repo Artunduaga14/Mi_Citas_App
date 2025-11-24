@@ -1,3 +1,4 @@
+// src/components/common/ExternalLink.tsx
 import { Link, type Href } from 'expo-router';
 import { openBrowserAsync } from 'expo-web-browser';
 import React from 'react';
@@ -9,6 +10,7 @@ type Props = Omit<ComponentProps<typeof Link>, 'href'> & { href: Href & string }
 export function ExternalLink({ href, ...rest }: Props) {
   return (
     <Link
+      testID="external-link"
       target="_blank"
       {...rest}
       href={href}
