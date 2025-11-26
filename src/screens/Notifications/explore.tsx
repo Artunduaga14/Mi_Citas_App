@@ -8,6 +8,7 @@ import AppointmentCard, { Appointment } from "../../components/cards/Appointment
 import AppointmentDetailModal from "../../components/cards/AppointmentDetailModel";
 import { RelatedPersonList } from "../../components/cards/RelatedPersonCard";
 import { authService } from "../../services/Auth/AuthService";
+import FilterButton from "../../components/common/FilterButton";
 
 // === CONFIGURACIÓN DE DIMENSIONES ===
 const { width } = Dimensions.get("window")
@@ -65,6 +66,13 @@ export default function TabTwoScreen() {
         <HeaderGreeting/>
 
         <ThemedText type="title" style={styles.title}>Actividad</ThemedText>
+
+        <FilterButton 
+  onFilterChange={(filterId) => {
+    console.log('Filtro seleccionado:', filterId);
+    // Aquí filtras tus citas según el filterId
+  }}
+/>
 
         <SectionList
           sections={sections}

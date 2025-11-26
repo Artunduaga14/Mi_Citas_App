@@ -1,9 +1,3 @@
-import { GenericForm } from "../../components/Forms/GenericForm";
-import { AuthLayout } from "../../layout/AuthLayout";
-import { GenericModal } from "../../utils/GenericModal";
-import { LoadingOverlay } from "../../utils/LoadingOverlay";
-import { FieldConfig } from "../../models/Models";
-import { HttpService } from "../../services/GenericServices";
 import React, { useState } from "react";
 import {
   Alert,
@@ -11,103 +5,120 @@ import {
   Text,
   TouchableOpacity
 } from "react-native";
-import { useNavigation, ParamListBase, NavigationProp } from "@react-navigation/native";
+
+import { GenericForm } from "../../components/Forms/GenericForm";
+import { AuthLayout } from "../../layout/AuthLayout";
+import { LoadingOverlay } from "../../utils/LoadingOverlay";
+import { FieldConfig } from "../../models/Models";
+import { HttpService } from "../../services/GenericServices";
+import { twoFactorService } from "../../services/Auth/TwoFactorService";
 import { authService } from "../../services/Auth/AuthService";
+import { ModificationRequestService } from "../../services/modification-request.service";
+
+import { useNavigation, ParamListBase, NavigationProp } from "@react-navigation/native";
+import { TwoFactorModal } from "../../components/animations/TwoFactorModal";
+import { BlockedAccountModal } from "../../components/Forms/BlockedAccountModal";
 
 export default function LoginScreen() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const [loading, setLoading] = useState(false);
 
-  // Estado de modales
-  const [showForgot, setShowForgot] = useState(false);
-  const [showRegister, setShowRegister] = useState(false);
+  const [show2FA, setShow2FA] = useState(false);
+  const [tempUserId, setTempUserId] = useState<number | null>(null);
 
-  // ================= FORM FIELDS =================
+  const [showBlockedModal, setShowBlockedModal] = useState(false);
+  const [blockedUserId, setBlockedUserId] = useState<number | null>(null);
+
   const loginFields: FieldConfig[] = [
-    { name: "email", label: "Correo", type: "email", required: true, placeholder: "Ingrese su correo electrónico" },
-    { name: "password", label: "Contraseña", type: "password", required: true, placeholder: "Ingrese su contraseña" },
+    { name: "email", label: "Correo", type: "email", required: true },
+    { name: "password", label: "Contraseña", type: "password", required: true }
   ];
 
-  const forgotFields: FieldConfig[] = [
-    { name: "email", label: "Correo", type: "email", required: true, placeholder: "Ingrese su correo registrado" },
-  ];
-
-  const registerFields: FieldConfig[] = [
-    { name: "name", label: "Nombre", type: "text", required: true, placeholder: "Ingrese su nombre" },
-    { name: "email", label: "Correo", type: "email", required: true, placeholder: "Ingrese su correo electrónico" },
-    { name: "password", label: "Contraseña", type: "password", required: true, placeholder: "Cree una contraseña" },
-  ];
-
-  // ================= HANDLERS =================
- const handleLogin = async (data: any) => {
-  try {
-    setLoading(true);
-
-    const response = await HttpService.login("user", data);
-
-    const token = response?.data?.accessToken;
-    if (!token) {
-      Alert.alert("❌ Error", "No se recibió token del servidor");
-      return;
-    }
-
-    await authService.setTokens(
-      response.data.accessToken,
-      response.data.refreshToken
-    );
-
-    Alert.alert("✅ Login correcto", "Bienvenido");
-
-    // 🔥 LA REDIRECCIÓN CORRECTA
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "Protected" }],
-    });
-
-  } catch (error) {
-    console.error(error);
-    Alert.alert("⚠️ Error", "No se pudo conectar con el servidor");
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-
-
-  const handleForgot = async (data: any) => {
+  const handleLogin = async (data: any) => {
     try {
       setLoading(true);
-      const response = await HttpService.forgotPassword(data);
-      if (response.status) {
-        Alert.alert("✅ Correo enviado", "Revisa tu bandeja para continuar");
-        setShowForgot(false);
-      } else {
-        Alert.alert("❌ Error", "Correo no existe");
+
+      const response = await HttpService.login("user", data);
+      const r = response.data;
+
+      // ⭐ Cuenta bloqueada → abrir modal de solicitud
+      if (r.isBlocked) {
+        setBlockedUserId(r.userId);
+        setShowBlockedModal(true);
+        return;
       }
-    } catch (error: any) {
-      console.error(error);
-      Alert.alert("⚠️ Error", "No se pudo conectar con el servidor");
+
+      // ⭐ 2FA
+      if (r.requiresTwoFactor) {
+        setTempUserId(r.userId);
+        setShow2FA(true);
+        return;
+      }
+
+      // ⭐ Login normal
+      await authService.setTokens(r.accessToken, r.refreshToken);
+
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Protected" }]
+      });
+
+    } catch (error) {
+      Alert.alert("⚠️ Error", "Credenciales inválidas o servidor no disponible.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRegister = async (data: Record<string, any>) => {
+  // ⭐ Enviar solicitud de desbloqueo
+  const handleSubmitUnblock = async (reason: string) => {
+    if (!blockedUserId) return;
+
     try {
       setLoading(true);
-      // Llama a tu endpoint de registro real
-      Alert.alert("✅ Registro exitoso", "Ya puedes iniciar sesión");
-      setShowRegister(false);
-    } catch (error: any) {
-      console.error(error);
-      Alert.alert("⚠️ Error", "No se pudo completar el registro");
+
+      await ModificationRequestService.create({
+        reason,
+        typeRequest: 0,
+        userId: blockedUserId,
+        startDate: null,
+        endDate: null,
+        statustypesId: 7,
+        observation: " "
+      });
+
+      setShowBlockedModal(false);
+
+      Alert.alert("📝 Solicitud enviada", "Tu solicitud de desbloqueo fue enviada correctamente.");
+    } catch (error) {
+      Alert.alert("Error", "No se pudo enviar la solicitud.");
     } finally {
       setLoading(false);
     }
   };
 
-  // ================= RENDER =================
+  const handleVerify2FA = async (code: string) => {
+    if (!tempUserId) return;
+
+    try {
+      setLoading(true);
+      const result = await twoFactorService.verify(tempUserId, code);
+
+      await authService.setTokens(result.accessToken, result.refreshToken);
+
+      setShow2FA(false);
+
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Protected" }]
+      });
+    } catch (error) {
+      Alert.alert("❌ Código inválido", "Verifica tu código e inténtalo nuevamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <AuthLayout>
@@ -115,11 +126,7 @@ export default function LoginScreen() {
 
         <GenericForm fields={loginFields} onSubmit={handleLogin} submitLabel="Iniciar sesión" />
 
-        <TouchableOpacity onPress={() => setShowForgot(true)} style={styles.forgotPasswordContainer}>
-          <Text style={styles.forgotPasswordText}>¿Olvidó su contraseña?</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => setShowRegister(true)} style={styles.registerContainer}>
+        <TouchableOpacity style={styles.registerContainer}>
           <Text style={styles.registerText}>
             ¿No tienes cuenta? <Text style={styles.registerLink}>Regístrate</Text>
           </Text>
@@ -128,22 +135,24 @@ export default function LoginScreen() {
 
       <LoadingOverlay visible={loading} />
 
-      <GenericModal visible={showForgot} onClose={() => setShowForgot(false)} title="Recuperar contraseña">
-        <GenericForm fields={forgotFields} onSubmit={handleForgot} submitLabel="Recuperar" />
-      </GenericModal>
+      <TwoFactorModal
+        visible={show2FA}
+        onClose={() => setShow2FA(false)}
+        onSubmit={handleVerify2FA}
+      />
 
-      <GenericModal visible={showRegister} onClose={() => setShowRegister(false)} title="Crear cuenta">
-        <GenericForm fields={registerFields} onSubmit={handleRegister} submitLabel="Registrarse" />
-      </GenericModal>
+      <BlockedAccountModal
+        visible={showBlockedModal}
+        onClose={() => setShowBlockedModal(false)}
+        onSubmit={handleSubmitUnblock}
+      />
     </>
   );
 }
 
 const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: "600", color: "#5A9FD4", textAlign: "center", marginBottom: 30 },
-  forgotPasswordContainer: { alignItems: "center", marginTop: 15 },
-  forgotPasswordText: { fontSize: 14, color: "#7F8C8D", textDecorationLine: "underline" },
   registerContainer: { alignItems: "center", marginTop: 20 },
   registerText: { fontSize: 14, color: "#7F8C8D" },
-  registerLink: { color: "#5A9FD4", fontWeight: "600", textDecorationLine: "underline" },
+  registerLink: { color: "#5A9FD4", fontWeight: "600", textDecorationLine: "underline" }
 });

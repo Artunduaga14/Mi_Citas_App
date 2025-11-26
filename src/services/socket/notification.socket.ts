@@ -13,7 +13,7 @@ class NotificationSocketService {
     if (this.connection) return;
 
     this.connection = new HubConnectionBuilder()
-      .withUrl(`${environment.apiUrl.replace("/api", "")}/hubs/notifications`, {
+      .withUrl(`${environment.apiUrl.replace("/api", "")}/hubs/noti`, {
         accessTokenFactory: () => token,
       })
       .withAutomaticReconnect()
