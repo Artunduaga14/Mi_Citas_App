@@ -82,7 +82,13 @@ async login(endpoint: string, data: LoginModel) {
     console.log("📥 [HTTP GET]", `/${endpoint}`, "→", response.status, `(${response.statusText})`);
     console.log("🧾 Response (parsed):", JSON.stringify(response.data, null, 2));
     return response;
-  }
+  },
+
+
+ async MarkAsRead(id: number) {console.log("Marking notification as read:", id);
+  return await api.patch(`Notification/${id}/mark-read`, {});
+
+}
 
 
 

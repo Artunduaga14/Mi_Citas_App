@@ -25,6 +25,7 @@ import { authService } from "../../services/Auth/AuthService";
 import PerfilForm, {
   PersonUpdate,
 } from "../../components/Forms/personProfileForm";
+import UserService from "../../services/user.service";
 
 export default function PersonProfile() {
   const navigation = useNavigation<any>();
@@ -35,33 +36,78 @@ export default function PersonProfile() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [userEmail, setUserEmail] = useState<string>("");
+
+const [autoReschedule, setAutoReschedule] = useState(false);
 
   // 👉 catálogos
   const [docTypes, setDocTypes] = useState<DocumentTypeDto[]>([]);
   const [epsList, setEpsList] = useState<EpsDto[]>([]);
 
-  useEffect(() => {
-    const init = async () => {
-      try {
-        await Promise.all([loadPerson(), loadCatalogs()]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    init();
-  }, []);
-
-  const loadPerson = async () => {
+ useEffect(() => {
+  const init = async () => {
     try {
-      const personId = await authService.getUserId(); // debe coincidir con el que usa tu API
-      if (!personId) return;
-      const data = await PersonService.getById(Number(personId));
-      setPerson(data);
-    } catch (err) {
-      console.error("Error cargando persona:", err);
-      Alert.alert("Error", "No se pudo cargar la información de la persona");
+      await Promise.all([loadPerson(), loadCatalogs(), loadUserForToggle()]);
+    } finally {
+      setLoading(false);
     }
   };
+  init();
+}, []);
+
+  const handleToggleRescheduling = async () => {
+  try {
+    const newState = !autoReschedule;
+    setAutoReschedule(newState); // optimista
+
+    await UserService.toggleRescheduling();
+
+    Alert.alert(
+      "Listo",
+      newState
+        ? "La reprogramación automática está activada"
+        : "La reprogramación automática está desactivada"
+    );
+  } catch (err) {
+    console.error("Error:", err);
+    Alert.alert("Error", "No se pudo actualizar");
+    setAutoReschedule(!autoReschedule); // revertir
+  }
+};
+
+
+  const loadPerson = async () => {
+  try {
+    const personId = await authService.getUserId();
+    if (!personId) return;
+
+    const data = await PersonService.getById(Number(personId));
+    setPerson(data);
+  } catch (err) {
+    console.error("Error cargando persona:", err);
+    Alert.alert("Error", "No se pudo cargar la información de la persona");
+  }
+};
+
+const loadUserForToggle = async () => {
+  try {
+    const userId = await authService.getUserId();
+    if (!userId) return;
+
+    const user = await UserService.getById(Number(userId));
+
+    if (typeof user.autoReschedule === "boolean") {
+      setAutoReschedule(user.autoReschedule);
+    }
+
+    if (user.email) {
+      setUserEmail(user.email);
+    }
+  } catch (err) {
+    console.error("Error cargando user para toggle:", err);
+  }
+};
+
 
   const loadCatalogs = async () => {
     try {
@@ -110,7 +156,7 @@ export default function PersonProfile() {
 
       rootNav.reset({
         index: 0,
-        routes: [{ name: "Auth" as never }], // 👈 nombre del stack de autenticación
+        routes: [{ name: "Protected" as never }], // 👈 nombre del stack de autenticación
       });
     }
   };
@@ -174,7 +220,7 @@ export default function PersonProfile() {
                   }}
                 >
                   <Ionicons name="log-out" size={16} color="#d11a2a" />
-                  <Text style={[styles.menuText, { color: "#d11a2a" }]}>
+                  <Text style={[styles.menuText, { color: "#d11a2a" }]}  onPress={handleLogout} >
                     Salir
                   </Text>
                 </TouchableOpacity>
@@ -225,7 +271,8 @@ export default function PersonProfile() {
           <Text style={styles.sectionTitle}>CONTACTO</Text>
           <InfoRow icon="call" label="Teléfono" value={person.phoneNumber} />
           {/* Cuando tengas email del backend, reemplaza aquí */}
-          <InfoRow icon="mail" label="Email" value="daniel.gomez@email.com" />
+      <InfoRow icon="mail" label="Email" value={userEmail || "Sin correo"} />
+
         </View>
 
         {/* INFORMACIÓN DE SALUD */}
@@ -241,7 +288,43 @@ export default function PersonProfile() {
             label="Régimen de salud"
             value={capitalize(person.healthRegime)}
           />
+          
         </View>
+        <View style={styles.section}>
+  <Text style={styles.sectionTitle}>REPROGRAMACIÓN AUTOMÁTICA</Text>
+
+  <View style={styles.toggleRow}>
+    <Ionicons
+      name="refresh-circle"
+      size={22}
+      color="#007bff"
+      style={{ marginRight: 8 }}
+    />
+
+    <View style={{ flex: 1 }}>
+      <Text style={styles.infoLabel}>Reprogramación automática</Text>
+      <Text style={styles.infoValue}>
+        El sistema reagendará tu cita automáticamente si llega a ocurrir algún imprevisto.
+      </Text>
+    </View>
+
+    <TouchableOpacity
+      style={[
+        styles.switchBox,
+        autoReschedule ? styles.switchOn : styles.switchOff,
+      ]}
+      onPress={handleToggleRescheduling}
+    >
+      <View
+        style={[
+          styles.switchCircle,
+          autoReschedule ? styles.circleOn : styles.circleOff,
+        ]}
+      />
+    </TouchableOpacity>
+  </View>
+</View>
+
       </ScrollView>
 
       {/* ===== Bottom sheet de edición (formulario) ===== */}
@@ -438,5 +521,38 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.35)",
     justifyContent: "flex-end",
-  },
+  },toggleRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginTop: 10,
+},
+
+switchBox: {
+  width: 52,
+  height: 28,
+  borderRadius: 20,
+  padding: 3,
+  justifyContent: "center",
+},
+
+switchOn: {
+  backgroundColor: "#4ade80",
+  alignItems: "flex-end",
+},
+
+switchOff: {
+  backgroundColor: "#d1d5db",
+  alignItems: "flex-start",
+},
+
+switchCircle: {
+  width: 22,
+  height: 22,
+  borderRadius: 11,
+  backgroundColor: "#fff",
+},
+
+circleOn: {},
+circleOff: {},
+
 });

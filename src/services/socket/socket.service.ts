@@ -8,6 +8,7 @@ export interface Horario {
   bookedCitationId?: number | null;
   lockedBy?: number | null;
   lockedUntil?: string | null;
+  scheduleHourId: number;
 }
 
 export interface SlotKey {
@@ -73,9 +74,9 @@ export class SocketService {
     return await this.connection?.invoke('UnlockSlot', req);
   }
 
-  async confirm(time: string) {
+  async confirm(time: string,relatedPersonId?: number) {
     const slot: SlotKey = { scheduleHourId: this.scheduleHourId, date: this.dateISO, timeBlock: time };
-    return await this.connection?.invoke('ConfirmSlot', slot);
+    return await this.connection?.invoke('ConfirmSlot', slot,  relatedPersonId ?? null );
   }
 
   private applyLocked(evt: any) {
