@@ -21,16 +21,27 @@ export const HttpService = {
 
 
   // POST → recibe el body
-  async post(endpoint: string, body: any) {
-    const response = await api.post(endpoint, body);
-    return response.data;
-  },
+async post(endpoint: string, body: any) {
+
+  // 🔍 Imprimir toda la información de la petición
+  console.log("=======================================");
+  console.log("📡 HTTP POST REQUEST");
+  console.log("➡️  Endpoint recibido:", endpoint);
+  console.log("🌐 URL final:", api.defaults.baseURL + endpoint);
+  console.log("📦 Body enviado:", body);
+  console.log("=======================================");
+
+  const response = await api.post(endpoint, body);
+  return response.data;
+},
+
 
   // PUT → recibe id o params + body
   async put(endpoint: string, body: any) {
     const response = await api.put(endpoint, body);
     return response.data;
   },
+
 
   // DELETE → recibe opcionalmente params
   async delete(endpoint: string, params?: any) {

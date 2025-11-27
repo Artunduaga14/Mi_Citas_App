@@ -23,6 +23,7 @@ import { HttpService } from "../../services/GenericServices";
 import { RelatedPersonList } from "../../components/cards/RelatedPersonCard";
 
 import RelatedPersonModal from "../../components/Forms/relatedPerson";
+import { authService } from "../../services/Auth/AuthService";
 
 const { width } = Dimensions.get("window");
 const NUM_COLS = 2;
@@ -39,21 +40,29 @@ export default function RelatedPersonsScreen() {
   const [query, setQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [personId, setPersonId] = useState<number | null>(null); // ← ID dinámico
 
   // item en edición (si hay, el modal va en modo "edit")
   const [editItem, setEditItem] = useState<RelatedPersonList | null>(null);
   const isEdit = !!editItem;
 
   // TODO: id real del paciente
-  const personId = 2;
-
-  useEffect(() => {
-    loadRelatedPersons();
+    useEffect(() => {
+    loadPersonId();
   }, []);
 
-  const loadRelatedPersons = async () => {
+    const loadPersonId = async () => {
+    const id = await authService.getUserId();
+    if (__DEV__) console.log("🆔 ID obtenido del token:", id);
+    setPersonId(id);
+
+    if (id) {
+      loadRelatedPersons(id);
+    }
+  };
+const loadRelatedPersons = async (id: number) => {
     try {
-      const res = await HttpService.get(`RelatedPerson/by-person/${personId}`);
+      const res = await HttpService.get(`RelatedPerson/by-person/${id}`);
       const items: RelatedPersonList[] = Array.isArray(res) ? res : [];
       setPeople(items);
     } catch (err) {
@@ -173,10 +182,12 @@ export default function RelatedPersonsScreen() {
           setShowModal(false);
           setEditItem(null);
         }}
-        onSaved={async () => {
-          await loadRelatedPersons();
-        }}
-        personId={personId}
+       onSaved={async () => {
+  if (personId) await loadRelatedPersons(personId);
+}}
+
+       personId={personId ?? 0}
+
         mode={isEdit ? "edit" : "create"}
         initial={editItem ?? undefined}
       />
