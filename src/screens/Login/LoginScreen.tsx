@@ -126,11 +126,15 @@ export default function LoginScreen() {
 
         <GenericForm fields={loginFields} onSubmit={handleLogin} submitLabel="Iniciar sesión" />
 
-        <TouchableOpacity style={styles.registerContainer}>
-          <Text style={styles.registerText}>
-            ¿No tienes cuenta? <Text style={styles.registerLink}>Regístrate</Text>
-          </Text>
-        </TouchableOpacity>
+        <TouchableOpacity
+  style={styles.registerContainer}
+  onPress={() => navigation.navigate("Register")} // ⬅️ AQUÍ
+>
+  <Text style={styles.registerText}>
+    ¿No tienes cuenta? <Text style={styles.registerLink}>Regístrate</Text>
+  </Text>
+</TouchableOpacity>
+
       </AuthLayout>
 
       <LoadingOverlay visible={loading} />

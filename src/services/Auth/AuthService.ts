@@ -38,6 +38,29 @@ private isTokenValid(token: string): boolean {
   }
 }
 
+// Extrae el PersonId desde el token JWT
+// Comentarios en español
+async getPersonId(): Promise<number | null> {
+  const token = await this.getToken();
+  if (!token) return null;
+
+  try {
+    const decoded: JwtPayload = jwtDecode(token);
+
+    // ⬅️ Intentos ordenados de los diferentes posibles claims
+    const personId =
+      decoded["PersonId"] ||
+      decoded["personId"] ||
+      decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] ||
+      decoded["pid"];
+
+    return personId ? Number(personId) : null;
+  } catch {
+    return null;
+  }
+}
+
+
 
 async getUserId(): Promise<number | null> {
   const token = await this.getToken();
