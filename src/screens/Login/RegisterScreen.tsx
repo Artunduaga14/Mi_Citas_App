@@ -204,14 +204,7 @@ export default function RegisterScreen() {
           <Text style={styles.title}>Registro</Text>
           <Text style={styles.subtitle}>{getStepTitle()}</Text>
           
-          {/* DEBUG: Temporal para verificar datos */}
-          {__DEV__ && (
-            <View style={{ padding: 10, backgroundColor: '#f0f0f0', marginBottom: 10 }}>
-              <Text style={{ fontSize: 10 }}>
-                🔍 Debug: {documentTypes.length} tipos doc | {epsList.length} EPS | Loaded: {catalogsLoaded ? 'Sí' : 'No'}
-              </Text>
-            </View>
-          )}
+         
 
           {/* Indicador de pasos */}
           <View style={styles.stepIndicator}>
