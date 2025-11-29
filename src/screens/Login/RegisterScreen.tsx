@@ -12,8 +12,8 @@ import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/
 import { Picker } from '@react-native-picker/picker';
 import { AuthLayout } from '../../layout/AuthLayout';
 import { PersonUserCreateDto, Gender, HealthRegime, DocumentTypes, Eps } from '../../models/Gestion/Register';
-import RegisterService from '../../services/RegisterService';
 import { LoadingOverlay } from '../../utils/LoadingOverlay';
+import RegisterService from '../../services/registerService';
 
 export default function RegisterScreen() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();

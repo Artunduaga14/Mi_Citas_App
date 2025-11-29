@@ -7,10 +7,11 @@ import { useNavigation } from "@react-navigation/native";
 import { authService } from "../../services/Auth/AuthService";
 import { Subscription } from "rxjs";
 import { notificationStore } from "../ui/notificationStore";
-import { PersonService } from "../../services/hospital/personServices";
 import { PersonList } from "../../models/Gestion/personModels";
 import { HttpService } from "../../services/GenericServices";
 import { NotificationItem } from "../../models/NotificationItem";
+import { PersonService } from "../../services/hospital/personServices";
+
 
 type Props = {
   name?: string;
@@ -40,7 +41,7 @@ export default function HeaderGreeting({ name }: Props) {
   useEffect(() => {
     const loadPerson = async () => {
       try {
-        const userId = await authService.getUserId();
+        const userId = await authService.getPersonId();
         if (!userId) return;
 
         const info = await PersonService.getById(userId);
