@@ -52,7 +52,7 @@ export default function RelatedPersonsScreen() {
   }, []);
 
     const loadPersonId = async () => {
-    const id = await authService.getUserId();
+    const id = await authService.getPersonId();
     if (__DEV__) console.log("🆔 ID obtenido del token:", id);
     setPersonId(id);
 

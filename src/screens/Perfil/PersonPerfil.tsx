@@ -78,7 +78,7 @@ const [autoReschedule, setAutoReschedule] = useState(false);
 
   const loadPerson = async () => {
   try {
-    const personId = await authService.getUserId();
+    const personId = await authService.getPersonId();
     if (!personId) return;
 
     const data = await PersonService.getById(Number(personId));
