@@ -111,8 +111,8 @@ const [scheduleHourId, setScheduleHourId] = useState<number | null>(null);
 
     try {
       setLoading(true);
-      const userId = await authService.getUserId();
-      const related = await HttpService.get(`/RelatedPerson/by-person/${2}`);
+      const userId = await authService.getPersonId();
+      const related = await HttpService.get(`/RelatedPerson/by-person/${userId}`);
       const list = Array.isArray(related) ? related : [];
       setLoading(false);
 
